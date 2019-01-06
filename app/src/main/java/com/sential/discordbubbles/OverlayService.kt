@@ -5,21 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
-import android.support.v4.content.ContextCompat
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.ImageButton
 import android.widget.Toast
-import android.view.Display
-import android.support.v4.content.ContextCompat.getSystemService
 import android.widget.ImageView
-import android.R.attr.bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
-import android.R.attr.bitmap
-import android.R.attr.bitmap
 import android.graphics.*
 
 
@@ -68,8 +59,8 @@ class OverlayService : Service(),View.OnTouchListener,View.OnClickListener {
 
         params.x = 0
         params.y = 100
-        params.width = 170
-        params.height = 170
+        params.width = 190
+        params.height = 190
 
         windowManager.addView(overlayButton, params)
     }
