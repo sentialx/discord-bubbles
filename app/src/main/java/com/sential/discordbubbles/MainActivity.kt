@@ -1,6 +1,7 @@
 package com.sential.discordbubbles
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -16,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         var intent: Intent? = null
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+            intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
             canDraw = Settings.canDrawOverlays(this)
 
             if (!canDraw && intent != null) {
