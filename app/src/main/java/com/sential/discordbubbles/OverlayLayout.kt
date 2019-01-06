@@ -6,12 +6,7 @@ import android.util.AttributeSet
 import android.view.*
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.view.KeyEvent.KEYCODE_BACK
-import android.content.Intent
-import android.content.BroadcastReceiver
-
-
-
+import android.widget.RelativeLayout
 
 
 class OverlayLayout : LinearLayout {
@@ -20,7 +15,7 @@ class OverlayLayout : LinearLayout {
     lateinit var view: View
     lateinit var darkBackground: LinearLayout
     lateinit var editText: EditText
-    lateinit var contentLayout: LinearLayout
+    lateinit var contentLayout: RelativeLayout
 
     constructor(context: Context) : super(context) {
         init();
@@ -61,6 +56,8 @@ class OverlayLayout : LinearLayout {
             PixelFormat.TRANSLUCENT
         )
 
+        //params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+
         params.gravity = Gravity.TOP or Gravity.START
     }
 
@@ -75,6 +72,8 @@ class OverlayLayout : LinearLayout {
     fun show() {
         view.visibility = View.VISIBLE
         editText.requestFocus()
+
+        //darkBackground.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
     }
 
     fun hide() {

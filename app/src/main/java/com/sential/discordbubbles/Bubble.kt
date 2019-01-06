@@ -11,7 +11,8 @@ import android.widget.LinearLayout
 import java.lang.Math.*
 
 class Bubble : ImageView, View.OnTouchListener {
-    private var OUT_OF_SCREEN_X: Float = OverlayService.dpToPx(12f).toFloat()
+    private val OUT_OF_SCREEN_X: Float = OverlayService.dpToPx(16f).toFloat()
+    private val DRAG_TOLERANCE: Float = 15f
 
     lateinit var params: WindowManager.LayoutParams
 
@@ -42,6 +43,10 @@ class Bubble : ImageView, View.OnTouchListener {
         init()
     }
 
+    private fun distance(x1: Float, x2: Float, y1: Float, y2: Float): Float {
+        return ((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun init() {
         imageView = ImageView(context)
@@ -66,7 +71,7 @@ class Bubble : ImageView, View.OnTouchListener {
             PixelFormat.TRANSLUCENT
         )
 
-        val size = OverlayService.dpToPx(72f)
+        val size = OverlayService.dpToPx(78f)
 
         params.gravity = Gravity.TOP or Gravity.START
         params.x = 0
@@ -106,14 +111,13 @@ class Bubble : ImageView, View.OnTouchListener {
                 }
 
                 moving = false
+                val metrics = OverlayService.getScreenSize()
 
                 if (toggled) {
-                    params.x = 0
+                    params.x = metrics.widthPixels - view.width
                     params.y = 0
                     imageView.x = 0f
                 } else {
-                    val metrics = OverlayService.getScreenSize()
-
                     if (params.x >= metrics.widthPixels / 2) {
                         params.x = metrics.widthPixels - view.width
                         imageView.x = OUT_OF_SCREEN_X
@@ -129,7 +133,7 @@ class Bubble : ImageView, View.OnTouchListener {
                 OverlayService.instance.windowManager.updateViewLayout(view, params)
             }
             MotionEvent.ACTION_MOVE -> {
-                if (abs(event.rawX - initialTouchX) > 15 || abs(event.rawY - initialTouchY) > 15) {
+                if (distance(initialTouchX, event.rawX, initialTouchY, event.rawY) > DRAG_TOLERANCE * DRAG_TOLERANCE) {
                     moving = true
                 }
 

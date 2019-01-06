@@ -37,7 +37,7 @@ class ImageHelper {
             val canvas = Canvas(bmOut)
             canvas.drawColor(0, PorterDuff.Mode.CLEAR)
             val ptBlur = Paint()
-            ptBlur.maskFilter = BlurMaskFilter(150f, BlurMaskFilter.Blur.NORMAL)
+            ptBlur.maskFilter = BlurMaskFilter(100f, BlurMaskFilter.Blur.NORMAL)
             val offsetXY = IntArray(2)
             val bmAlpha = src.extractAlpha(ptBlur, offsetXY)
             val ptAlphaColor = Paint()
