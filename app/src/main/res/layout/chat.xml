@@ -12,7 +12,7 @@
             android:background="@drawable/layout_bg"
             android:orientation="vertical"
             android:id="@+id/contentLayout"
-            android:focusable="true"
+            android:clickable="true"
             android:layout_marginTop="72dp">
         <LinearLayout
                 android:layout_width="match_parent"
