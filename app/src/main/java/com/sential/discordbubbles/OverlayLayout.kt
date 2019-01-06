@@ -42,8 +42,8 @@ class OverlayLayout : LinearLayout {
         editText = view.findViewById(R.id.editText)
 
         params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
             OverlayService.getLayoutFlag(),
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
@@ -51,8 +51,6 @@ class OverlayLayout : LinearLayout {
 
         val metrics = OverlayService.getScreenSize()
 
-        params.width = metrics.widthPixels
-        params.height = metrics.heightPixels - OverlayService.dpToPx(25f) // Android Status Bar Height
         params.gravity = Gravity.TOP or Gravity.START
     }
 
