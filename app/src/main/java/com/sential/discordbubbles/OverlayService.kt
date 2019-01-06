@@ -9,6 +9,13 @@ import android.widget.Toast
 import android.widget.ImageView
 import android.graphics.*
 import android.view.*
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.view.Window.ID_ANDROID_CONTENT
+import java.lang.Math.abs
+import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
+import android.support.v4.content.ContextCompat.getSystemService
+import android.view.inputmethod.InputMethodManager
 
 
 class OverlayService : Service(),View.OnTouchListener,View.OnClickListener {
@@ -18,6 +25,9 @@ class OverlayService : Service(),View.OnTouchListener,View.OnClickListener {
     private lateinit var windowManager: WindowManager
     private lateinit var bubble: ImageView
     private lateinit var floatingView: View
+    private lateinit var darkBackground: LinearLayout
+    private lateinit var editText: EditText
+    private lateinit var contentLayout: LinearLayout
 
     private var initialX: Int = 0
     private var initialY: Int = 0
@@ -37,9 +47,23 @@ class OverlayService : Service(),View.OnTouchListener,View.OnClickListener {
         floatingView = LayoutInflater.from(this).inflate(R.layout.chat, null);
         floatingView.visibility = View.GONE;
 
-        floatingView.setOnClickListener {
+        darkBackground = floatingView.findViewById(R.id.darkBg)
+        darkBackground.setOnClickListener {
             hide()
         }
+
+        contentLayout = floatingView.findViewById(R.id.contentLayout)
+
+        editText = floatingView.findViewById(R.id.editText)
+
+        editText.setOnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+                editText.requestFocus()
+                val inputManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputManager.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
+            }
+        }
+
 
         bubble = ImageView(this)
         bubble.setOnTouchListener(this)
@@ -74,7 +98,7 @@ class OverlayService : Service(),View.OnTouchListener,View.OnClickListener {
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             layoutFlag,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         )
 
@@ -84,8 +108,9 @@ class OverlayService : Service(),View.OnTouchListener,View.OnClickListener {
         val size = Point()
         display.getSize(size)
 
+
         layoutParams.width = size.x
-        layoutParams.height = size.y
+        layoutParams.height = size.y - 63
         layoutParams.gravity = Gravity.TOP or Gravity.START
 
         windowManager.addView(floatingView, layoutParams)
@@ -113,6 +138,21 @@ class OverlayService : Service(),View.OnTouchListener,View.OnClickListener {
             MotionEvent.ACTION_UP -> {
                 if (!moving) {
                     view!!.performClick()
+
+                    if (!toggled) {
+                        lastX = bubbleParams.x
+                        lastY = bubbleParams.y
+
+                        bubbleParams.x = 0
+                        bubbleParams.y = 0
+
+                        floatingView.visibility = View.VISIBLE;
+
+                        windowManager.updateViewLayout(bubble, bubbleParams)
+                        toggled = true
+                    } else {
+                        hide()
+                    }
                 }
 
                 moving = false
@@ -132,7 +172,9 @@ class OverlayService : Service(),View.OnTouchListener,View.OnClickListener {
                 windowManager.updateViewLayout(bubble, bubbleParams)
             }
             MotionEvent.ACTION_MOVE -> {
-                moving = true
+                if (abs(event.rawX - initialTouchX) > 15 || abs(event.rawY - initialTouchY) > 15) {
+                    moving = true
+                }
                 bubbleParams.x = (initialX + (event.rawX - initialTouchX)).toInt()
                 bubbleParams.y = (initialY + (event.rawY - initialTouchY)).toInt()
                 windowManager.updateViewLayout(bubble, bubbleParams)
@@ -143,20 +185,7 @@ class OverlayService : Service(),View.OnTouchListener,View.OnClickListener {
     }
 
     override fun onClick(view: View?) {
-        if (!toggled) {
-            lastX = bubbleParams.x
-            lastY = bubbleParams.y
 
-            bubbleParams.x = 0
-            bubbleParams.y = 0
-
-            floatingView.visibility = View.VISIBLE;
-
-            windowManager.updateViewLayout(bubble, bubbleParams)
-            toggled = true
-        } else {
-            hide()
-        }
     }
 
     fun hide() {
