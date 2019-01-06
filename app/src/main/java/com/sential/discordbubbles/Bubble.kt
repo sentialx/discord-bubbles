@@ -96,7 +96,7 @@ class Bubble : ImageView, View.OnTouchListener {
                         params.x = 0
                         params.y = 0
 
-                        OverlayService.instance.overlayLayout.view.visibility = View.VISIBLE
+                        OverlayService.instance.overlayLayout.show()
                         OverlayService.instance.windowManager.updateViewLayout(view, params)
 
                         toggled = true
