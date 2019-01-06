@@ -6,6 +6,9 @@ import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.support.v4.app.NotificationManagerCompat
+
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,13 +23,20 @@ class MainActivity : AppCompatActivity() {
             intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
             canDraw = Settings.canDrawOverlays(this)
 
-            if (!canDraw && intent != null) {
+            if (!canDraw) {
                 startActivity(intent)
             }
         }
 
+        if (!NotificationManagerCompat.getEnabledListenerPackages(this).contains(packageName)) {
+            startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
+        }
+
         val service = Intent(this, OverlayService::class.java)
         startService(service)
+
+        val service2 = Intent(this, NotifyService::class.java)
+        startService(service2)
     }
 }
 

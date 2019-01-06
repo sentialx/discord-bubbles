@@ -1,12 +1,14 @@
 package com.sential.discordbubbles
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.util.AttributeSet
 import android.view.*
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.TextView
 
 
 class OverlayLayout : LinearLayout {
@@ -15,18 +17,26 @@ class OverlayLayout : LinearLayout {
     lateinit var view: View
     lateinit var darkBackground: LinearLayout
     lateinit var editText: EditText
-    lateinit var contentLayout: RelativeLayout
+    lateinit var contentLayout: LinearLayout
+    lateinit var chat: LinearLayout
 
     constructor(context: Context) : super(context) {
-        init();
+        init()
     }
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init();
+        init()
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
-        init();
+        init()
+    }
+
+    fun addChatItem(title: String, text: String) {
+        val chatItem = TextView(context)
+        chatItem.text = "$title: $text"
+        chatItem.setTextColor(Color.WHITE)
+        chat.addView(chatItem)
     }
 
     private fun init() {
@@ -39,6 +49,8 @@ class OverlayLayout : LinearLayout {
         darkBackground.setOnClickListener {
             OverlayService.instance.hide()
         }
+
+        chat = view.findViewById(R.id.chat)
 
         contentLayout = view.findViewById(R.id.contentLayout)
         contentLayout.isFocusableInTouchMode = true

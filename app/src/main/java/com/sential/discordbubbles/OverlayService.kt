@@ -10,8 +10,6 @@ import android.os.IBinder
 import android.view.*
 import android.util.DisplayMetrics
 import android.content.IntentFilter
-import android.view.inputmethod.InputMethodManager
-
 
 class OverlayService : Service() {
     lateinit var windowManager: WindowManager
