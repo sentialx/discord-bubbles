@@ -76,7 +76,7 @@ class OverlayLayout : LinearLayout {
     }
 
     private val onKey: View.OnKeyListener = View.OnKeyListener { _, keyCode, _ ->
-        if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_HOME || keyCode == KeyEvent.KEYCODE_MENU) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
             OverlayService.instance.hide()
             return@OnKeyListener true
         }
@@ -86,7 +86,7 @@ class OverlayLayout : LinearLayout {
     fun show() {
         view.visibility = View.VISIBLE
         editText.requestFocus()
-        params.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND
+        params.flags = params.flags or WindowManager.LayoutParams.FLAG_DIM_BEHIND
 
         OverlayService.instance.windowManager.updateViewLayout(view, params)
         //darkBackground.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -94,7 +94,7 @@ class OverlayLayout : LinearLayout {
 
     fun hide() {
         view.visibility = View.GONE
-        params.flags = 0
+        params.flags = params.flags and (WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv())
         OverlayService.instance.windowManager.updateViewLayout(view, params)
     }
 }
