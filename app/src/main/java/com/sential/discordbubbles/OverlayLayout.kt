@@ -68,6 +68,8 @@ class OverlayLayout : LinearLayout {
             PixelFormat.TRANSLUCENT
         )
 
+        params.dimAmount = 0.5f
+
         //params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
 
         params.gravity = Gravity.TOP or Gravity.START
@@ -84,12 +86,16 @@ class OverlayLayout : LinearLayout {
     fun show() {
         view.visibility = View.VISIBLE
         editText.requestFocus()
+        params.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND
 
+        OverlayService.instance.windowManager.updateViewLayout(view, params)
         //darkBackground.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
     }
 
     fun hide() {
         view.visibility = View.GONE
+        params.flags = 0
+        OverlayService.instance.windowManager.updateViewLayout(view, params)
     }
 }
 

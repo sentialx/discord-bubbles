@@ -61,14 +61,13 @@ class Bubble : ImageView, View.OnTouchListener {
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             OverlayService.getLayoutFlag(),
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         )
 
         val size = OverlayService.dpToPx(78f)
 
         params.gravity = (Gravity.TOP or Gravity.START) or Gravity.DISPLAY_CLIP_VERTICAL
-        params.flags = WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         params.x = -OUT_OF_SCREEN_X
         params.y = 100
         params.width = size
@@ -128,7 +127,6 @@ class Bubble : ImageView, View.OnTouchListener {
         }
 
         OverlayService.instance.windowManager.updateViewLayout(view, params)
-
 
         return true
     }
