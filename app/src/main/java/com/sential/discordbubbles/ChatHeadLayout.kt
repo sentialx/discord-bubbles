@@ -1,53 +1,38 @@
 package com.sential.discordbubbles
 
-import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
-import android.util.AttributeSet
 import android.view.*
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import android.widget.TextView
 
 
-class OverlayLayout : LinearLayout {
-    lateinit var params: WindowManager.LayoutParams
+class ChatHeadLayout(container: ChatHeadContainer) {
+    var params: WindowManager.LayoutParams
 
-    lateinit var view: View
-    lateinit var darkBackground: LinearLayout
-    lateinit var editText: EditText
-    lateinit var contentLayout: LinearLayout
-    lateinit var chat: LinearLayout
+    var view: View = LayoutInflater.from(OverlayService.instance).inflate(R.layout.chat, null)
+    var darkBackground: LinearLayout
+    var editText: EditText
+    var contentLayout: LinearLayout
+    var chat: LinearLayout
 
-    constructor(context: Context) : super(context) {
-        init()
+    private val onKey: View.OnKeyListener = View.OnKeyListener { _, keyCode, _ ->
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            //OverlayService.instance.hide()
+            return@OnKeyListener true
+        }
+        return@OnKeyListener false
     }
 
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init()
-    }
-
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
-        init()
-    }
-
-    fun addChatItem(title: String, text: String) {
-        val chatItem = TextView(context)
-        chatItem.text = "$title: $text"
-        chatItem.setTextColor(Color.WHITE)
-        chat.addView(chatItem)
-    }
-
-    private fun init() {
-        view = LayoutInflater.from(context).inflate(R.layout.chat, null)
+    init {
         view.visibility = View.GONE
 
         editText = view.findViewById(R.id.editText)
 
         darkBackground = view.findViewById(R.id.darkBg)
         darkBackground.setOnClickListener {
-            OverlayService.instance.hide()
+           // OverlayService.instance.hide()
         }
 
         chat = view.findViewById(R.id.chat)
@@ -63,24 +48,22 @@ class OverlayLayout : LinearLayout {
         params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
-            OverlayService.getLayoutFlag(),
+            WindowManagerHelper.getLayoutFlag(),
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         )
 
         params.dimAmount = 0.5f
-
-        //params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
-
         params.gravity = Gravity.TOP or Gravity.START
+
+        OverlayService.instance.windowManager.addView(view, params)
     }
 
-    private val onKey: View.OnKeyListener = View.OnKeyListener { _, keyCode, _ ->
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            OverlayService.instance.hide()
-            return@OnKeyListener true
-        }
-        return@OnKeyListener false
+    fun addChatItem(title: String, text: String) {
+        val chatItem = TextView(OverlayService.instance)
+        chatItem.text = "$title: $text"
+        chatItem.setTextColor(Color.WHITE)
+        chat.addView(chatItem)
     }
 
     fun show() {
@@ -89,7 +72,6 @@ class OverlayLayout : LinearLayout {
         params.flags = params.flags or WindowManager.LayoutParams.FLAG_DIM_BEHIND
 
         OverlayService.instance.windowManager.updateViewLayout(view, params)
-        //darkBackground.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
     }
 
     fun hide() {

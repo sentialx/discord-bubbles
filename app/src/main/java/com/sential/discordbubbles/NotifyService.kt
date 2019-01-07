@@ -13,24 +13,14 @@ class NotifyService : NotificationListenerService() {
         super.onCreate()
     }
 
-    private fun getString(str: String?): String {
-        return if (str == null) {
-            "null"
-        } else {
-            str
-        }
-    }
-
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (sbn.packageName == "com.discord") {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                val b = sbn.notification.extras.get("android.messages") as Array<Parcelable>
+                val messages = sbn.notification.extras.get("android.messages") as Array<Parcelable>
+                val msgBundle = messages.last() as Bundle
 
-                val msgBundle = b.last() as Bundle
-                OverlayService.instance.overlayLayout.addChatItem(getString(msgBundle.getString("sender")), getString(msgBundle.get("text")!!.toString()))
+                // OverlayService.instance.chatHeadLayout.addChatItem(msgBundle.getString("sender")!!, msgBundle.get("text")!!.toString())
             }
-
-
         }
     }
 
