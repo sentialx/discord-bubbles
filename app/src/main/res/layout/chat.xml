@@ -39,7 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/chat"
-                android:paddingStart="8dp"
+                android:paddingStart="16dp"
                 android:orientation="vertical"
                 android:layout_weight="2" />
         <EditText
@@ -51,7 +51,9 @@
                 android:textSize="14dp"
                 android:textColorHint="#8Cffffff"
                 android:id="@+id/editText"
-                android:layout_margin="8dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:background="@drawable/input_rounded"/>
     </LinearLayout>
 </LinearLayout>

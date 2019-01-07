@@ -11,13 +11,12 @@ import android.widget.LinearLayout
 import java.lang.Math.*
 
 class Bubble : ImageView, View.OnTouchListener {
-    private val OUT_OF_SCREEN_X: Float = OverlayService.dpToPx(16f).toFloat()
+    private val OUT_OF_SCREEN_X: Int = OverlayService.dpToPx(16f)
     private val DRAG_TOLERANCE: Float = 15f
 
     lateinit var params: WindowManager.LayoutParams
 
-    lateinit var view: LinearLayout
-    lateinit var imageView: ImageView
+    lateinit var view: ImageView
 
     private var initialX: Int = 0
     private var initialY: Int = 0
@@ -29,7 +28,6 @@ class Bubble : ImageView, View.OnTouchListener {
     private var lastY: Int = 0
     private var toggled = false
 
-    private var isOnRight = false
 
     constructor(context: Context) : super(context) {
         init()
@@ -49,19 +47,15 @@ class Bubble : ImageView, View.OnTouchListener {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun init() {
-        imageView = ImageView(context)
-        view = LinearLayout(context)
+        view = ImageView(context)
 
-        view.clipChildren = false
-
-        imageView.x = -OUT_OF_SCREEN_X
-        imageView.setOnTouchListener(this)
-        imageView.adjustViewBounds = true
-        imageView.scaleType = ImageView.ScaleType.CENTER_CROP
+        view.setOnTouchListener(this)
+        view.adjustViewBounds = true
+        view.scaleType = ImageView.ScaleType.CENTER_CROP
 
         val bitmap = ImageHelper.getRoundedCornerBitmap(BitmapFactory.decodeResource(resources, R.drawable.test), 10000);
 
-        imageView.setImageBitmap(ImageHelper.addShadow(bitmap));
+        view.setImageBitmap(ImageHelper.addShadow(bitmap));
 
         params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -73,13 +67,12 @@ class Bubble : ImageView, View.OnTouchListener {
 
         val size = OverlayService.dpToPx(78f)
 
-        params.gravity = Gravity.TOP or Gravity.START
-        params.x = 0
+        params.gravity = (Gravity.TOP or Gravity.START) or Gravity.DISPLAY_CLIP_VERTICAL
+        params.flags = WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        params.x = -OUT_OF_SCREEN_X
         params.y = 100
         params.width = size
         params.height = size
-
-        view.addView(imageView)
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
@@ -102,7 +95,6 @@ class Bubble : ImageView, View.OnTouchListener {
                         params.y = 0
 
                         OverlayService.instance.overlayLayout.show()
-                        OverlayService.instance.windowManager.updateViewLayout(view, params)
 
                         toggled = true
                     } else {
@@ -111,57 +103,38 @@ class Bubble : ImageView, View.OnTouchListener {
                 }
 
                 moving = false
+
                 val metrics = OverlayService.getScreenSize()
 
                 if (toggled) {
                     params.x = metrics.widthPixels - view.width
                     params.y = 0
-                    imageView.x = 0f
                 } else {
                     if (params.x >= metrics.widthPixels / 2) {
-                        params.x = metrics.widthPixels - view.width
-                        imageView.x = OUT_OF_SCREEN_X
-                        isOnRight = true
+                        params.x = metrics.widthPixels - view.width + OUT_OF_SCREEN_X
                     } else if (params.x < metrics.widthPixels / 2) {
-                        params.x = 0
-                        imageView.x = -OUT_OF_SCREEN_X
-                        isOnRight = false
+                        params.x =  -OUT_OF_SCREEN_X
                     }
                 }
-
-
-                OverlayService.instance.windowManager.updateViewLayout(view, params)
             }
             MotionEvent.ACTION_MOVE -> {
                 if (distance(initialTouchX, event.rawX, initialTouchY, event.rawY) > DRAG_TOLERANCE * DRAG_TOLERANCE) {
                     moving = true
                 }
 
-                if (toggled) {
-                    params.x = (initialX + (event.rawX - initialTouchX)).toInt()
-                } else {
-                   if (isOnRight && min(0f, event.rawX - initialTouchX) > -OUT_OF_SCREEN_X) {
-                       imageView.x = OUT_OF_SCREEN_X + min(0f, event.rawX - initialTouchX)
-                   } else if (!isOnRight && event.rawX - initialTouchX < OUT_OF_SCREEN_X) {
-                       imageView.x = -OUT_OF_SCREEN_X + max(0f, event.rawX - initialTouchX)
-                   } else {
-                       imageView.x = 0f
-                       params.x = (initialX + (event.rawX - initialTouchX)).toInt() + if (isOnRight) OUT_OF_SCREEN_X.toInt() else -OUT_OF_SCREEN_X.toInt()
-                   }
-                }
-
+                params.x = (initialX + (event.rawX - initialTouchX)).toInt()
                 params.y = (initialY + (event.rawY - initialTouchY)).toInt()
-
-                OverlayService.instance.windowManager.updateViewLayout(view, params)
             }
         }
+
+        OverlayService.instance.windowManager.updateViewLayout(view, params)
+
 
         return true
     }
 
 
     fun hide() {
-        imageView.x = if (isOnRight) OUT_OF_SCREEN_X else -OUT_OF_SCREEN_X
         params.x = lastX
         params.y = lastY
         OverlayService.instance.windowManager.updateViewLayout(view, params)

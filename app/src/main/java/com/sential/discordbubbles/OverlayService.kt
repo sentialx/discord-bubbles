@@ -10,11 +10,15 @@ import android.os.IBinder
 import android.view.*
 import android.util.DisplayMetrics
 import android.content.IntentFilter
+import android.graphics.PixelFormat
+import android.widget.LinearLayout
 
 class OverlayService : Service() {
     lateinit var windowManager: WindowManager
     lateinit var bubble: Bubble
     lateinit var overlayLayout: OverlayLayout
+
+    lateinit var params: WindowManager.LayoutParams
 
     companion object {
         lateinit var instance: OverlayService

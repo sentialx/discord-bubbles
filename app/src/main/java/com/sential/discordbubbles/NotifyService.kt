@@ -1,6 +1,5 @@
 package com.sential.discordbubbles
 
-import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.content.Intent
@@ -8,9 +7,6 @@ import android.os.IBinder
 import android.os.Bundle
 import android.os.Parcelable
 import android.os.Build
-import android.R.attr.keySet
-import android.util.Log
-
 
 class NotifyService : NotificationListenerService() {
     override fun onCreate() {
