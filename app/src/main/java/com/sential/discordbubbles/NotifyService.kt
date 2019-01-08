@@ -15,11 +15,19 @@ class NotifyService : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (sbn.packageName == "com.discord") {
+            val title = sbn.notification.extras.getString("android.title")
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 val messages = sbn.notification.extras.get("android.messages") as Array<Parcelable>
                 val msgBundle = messages.last() as Bundle
 
-                // OverlayService.instance.chatHeadLayout.addChatItem(msgBundle.getString("sender")!!, msgBundle.get("text")!!.toString())
+                var chatHead = OverlayService.instance.chatHeadsArrangement.chatHeads.find { it.server == title }
+
+                if (chatHead == null) {
+                    chatHead = OverlayService.instance.chatHeadsArrangement.addChatHead(true)
+                }
+
+                chatHead.chatHeadLayout.addChatItem(msgBundle.getString("sender")!!, msgBundle.get("text")!!.toString())
             }
         }
     }

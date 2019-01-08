@@ -8,7 +8,7 @@ import android.graphics.BlurMaskFilter
 
 class ImageHelper {
     companion object {
-        fun getRoundedCornerBitmap(bitmap: Bitmap, pixels: Float): Bitmap {
+        fun getCircularBitmap(bitmap: Bitmap): Bitmap {
             val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(output)
 
@@ -19,27 +19,31 @@ class ImageHelper {
             canvas.drawARGB(0, 0, 0, 0)
 
             paint.color = -0xbdbdbe
-            canvas.drawRoundRect(RectF(rect), pixels, pixels, paint)
+            canvas.drawCircle(output.width.toFloat() / 2, output.height.toFloat() / 2, output.width.toFloat() / 2, paint)
 
             paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
             canvas.drawBitmap(bitmap, rect, rect, paint)
 
-            return output
+            return Bitmap.createScaledBitmap(output, ChatHeadsArrangement.CHAT_HEAD_SIZE, ChatHeadsArrangement.CHAT_HEAD_SIZE, true);
         }
 
         fun addShadow(src: Bitmap): Bitmap {
-            val bmOut = Bitmap.createBitmap(src.width + 400, src.height + 400, Bitmap.Config.ARGB_8888)
+            val bmOut = Bitmap.createBitmap(src.width + 10, src.height + 10, Bitmap.Config.ARGB_8888)
+
+            val centerX = (bmOut.width / 2 - src.width / 2).toFloat()
+            val centerY = (bmOut.height / 2 - src.height / 2).toFloat()
+
             val canvas = Canvas(bmOut)
             canvas.drawColor(0, PorterDuff.Mode.CLEAR)
             val ptBlur = Paint()
-            ptBlur.maskFilter = BlurMaskFilter(75f, BlurMaskFilter.Blur.NORMAL)
+            ptBlur.maskFilter = BlurMaskFilter(10f, BlurMaskFilter.Blur.NORMAL)
             val offsetXY = IntArray(2)
             val bmAlpha = src.extractAlpha(ptBlur, offsetXY)
             val ptAlphaColor = Paint()
             ptAlphaColor.color = Color.argb(70, 0, 0, 0)
-            canvas.drawBitmap(bmAlpha, offsetXY[0].toFloat() + 200f, offsetXY[1].toFloat() + 200f, ptAlphaColor)
+            canvas.drawBitmap(bmAlpha, centerX + offsetXY[0], centerY  + offsetXY[1], ptAlphaColor)
             bmAlpha.recycle()
-            canvas.drawBitmap(src, 200f, 200f, null)
+            canvas.drawBitmap(src, centerX, centerY,null)
             return bmOut
         }
     }

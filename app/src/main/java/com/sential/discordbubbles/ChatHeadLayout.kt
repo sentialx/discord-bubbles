@@ -2,11 +2,11 @@ package com.sential.discordbubbles
 
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.opengl.Visibility
 import android.view.*
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-
 
 class ChatHeadLayout(container: ChatHeadContainer) {
     var params: WindowManager.LayoutParams
@@ -19,20 +19,22 @@ class ChatHeadLayout(container: ChatHeadContainer) {
 
     private val onKey: View.OnKeyListener = View.OnKeyListener { _, keyCode, _ ->
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            //OverlayService.instance.hide()
+            OverlayService.instance.chatHeadsArrangement.collapseChatHeads()
             return@OnKeyListener true
         }
         return@OnKeyListener false
     }
 
     init {
+        view.scaleX = 0f
+        view.scaleY = 0f
         view.visibility = View.GONE
 
         editText = view.findViewById(R.id.editText)
 
         darkBackground = view.findViewById(R.id.darkBg)
         darkBackground.setOnClickListener {
-           // OverlayService.instance.hide()
+           OverlayService.instance.chatHeadsArrangement.collapseChatHeads()
         }
 
         chat = view.findViewById(R.id.chat)
@@ -67,7 +69,10 @@ class ChatHeadLayout(container: ChatHeadContainer) {
     }
 
     fun show() {
+        view.scaleX = 1f
+        view.scaleY = 1f
         view.visibility = View.VISIBLE
+
         editText.requestFocus()
         params.flags = params.flags or WindowManager.LayoutParams.FLAG_DIM_BEHIND
 
@@ -75,7 +80,10 @@ class ChatHeadLayout(container: ChatHeadContainer) {
     }
 
     fun hide() {
+        view.scaleX = 0f
+        view.scaleY = 0f
         view.visibility = View.GONE
+
         params.flags = params.flags and (WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv())
         OverlayService.instance.windowManager.updateViewLayout(view, params)
     }

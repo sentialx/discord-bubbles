@@ -7,7 +7,7 @@ import kotlin.math.pow
 class ChatHeadsArrangement : View.OnTouchListener {
     companion object {
         val CHAT_HEAD_OUT_OF_SCREEN_X: Int = WindowManagerHelper.dpToPx(16f)
-        val CHAT_HEAD_SIZE: Int = WindowManagerHelper.dpToPx(78f)
+        val CHAT_HEAD_SIZE: Int = WindowManagerHelper.dpToPx(64f)
         const val CHAT_HEAD_DRAG_TOLERANCE: Float = 20f
         const val CHAT_HEAD_PADDING: Int = 16
     }
@@ -39,9 +39,14 @@ class ChatHeadsArrangement : View.OnTouchListener {
         val index = chatHeads.indexOf(chatHead)
         chatHeads.removeAt(index)
         chatHeads.add(0, chatHead)
+
+        chatHeads.asReversed().forEach {
+            OverlayService.instance.windowManager.removeView(it.chatHead)
+            OverlayService.instance.windowManager.addView(it.chatHead, it.chatHead.params)
+        }
     }
 
-    fun addChatHead(isTop: Boolean = false) {
+    fun addChatHead(isTop: Boolean = false): ChatHeadContainer {
         if (isTop) {
             chatHeads.forEach {
                 if (it.isTop) {
@@ -57,9 +62,21 @@ class ChatHeadsArrangement : View.OnTouchListener {
 
         chatHeads.asReversed().forEachIndexed { index, element ->
             element.chatHead.x = -CHAT_HEAD_OUT_OF_SCREEN_X - CHAT_HEAD_PADDING * (chatHeads.size - 1 - index)
-            OverlayService.instance.windowManager.removeView(element.chatHead.view)
-            OverlayService.instance.windowManager.addView(element.chatHead.view, element.chatHead.params)
+            OverlayService.instance.windowManager.removeView(element.chatHead)
+            OverlayService.instance.windowManager.addView(element.chatHead, element.chatHead.params)
         }
+
+        return chatHeadContainer
+    }
+
+    fun collapseChatHeads() {
+        chatHeads.forEachIndexed { index, element ->
+            element.isSelected = false
+            element.animate(lastX - (CHAT_HEAD_PADDING * index * if (isOnRight) -1 else 1), lastY, 100)
+            element.chatHeadLayout.hide()
+        }
+
+        toggled = false
     }
 
     private fun distance(x1: Float, x2: Float, y1: Float, y2: Float): Float {
@@ -67,10 +84,14 @@ class ChatHeadsArrangement : View.OnTouchListener {
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+        val reversedChatHeads = chatHeads.asReversed()
+
+        val currentChatHead = chatHeads.find { it.chatHead == v }!!
+
        when (event!!.action) {
             MotionEvent.ACTION_DOWN -> {
-                initialX = topChatHead?.chatHead?.x!!
-                initialY = topChatHead?.chatHead?.y!!
+                initialX = currentChatHead.chatHead.x
+                initialY = currentChatHead.chatHead.y
                 initialTouchX = event.rawX
                 initialTouchY = event.rawY
             }
@@ -86,41 +107,40 @@ class ChatHeadsArrangement : View.OnTouchListener {
                         lastX = topChatHead?.chatHead?.x!!
                         lastY = topChatHead?.chatHead?.y!!
 
-                        topChatHead?.chatHead?.x = metrics.widthPixels - topChatHead?.chatHead?.view?.width!!
-                        topChatHead?.chatHead?.y = 0
-
                         chatHeads.forEachIndexed { index, it ->
-                            it.chatHead.x = metrics.widthPixels - it.chatHead.view.width - (index * (it.chatHead.view.width - WindowManagerHelper.dpToPx(8f)))
-                            it.chatHead.y = 0
+                            it.animate(metrics.widthPixels - it.chatHead.width - (index * (it.chatHead.width)), 0, 200)
                         }
 
                         topChatHead?.chatHeadLayout?.show()
+
+                        topChatHead?.isSelected = true
+                    } else if (currentChatHead.isSelected) {
+                        collapseChatHeads()
                     } else {
-                        chatHeads.forEachIndexed { index, element ->
-                            element.chatHead.x = lastX - (CHAT_HEAD_PADDING * index * if (isOnRight) -1 else 1)
-                            element.chatHead.y = lastY
-                            element.chatHeadLayout.hide()
-                        }
+                        val selectedChatHead = chatHeads.find { it.isSelected }!!
+                        selectedChatHead.isSelected = false
+                        selectedChatHead.chatHeadLayout.hide()
 
-                        toggled = false
+                        currentChatHead.isSelected = true
+                        currentChatHead.chatHeadLayout.show()
                     }
-
-                    return true
-                }
-
-                moving = false
-
-                if (topChatHead?.chatHead?.x!! >= metrics.widthPixels / 2) {
-                    chatHeads.asReversed().forEachIndexed { index, element ->
-                        element.chatHead.x = metrics.widthPixels - topChatHead?.chatHead?.view?.width!! + CHAT_HEAD_OUT_OF_SCREEN_X + CHAT_HEAD_PADDING * (chatHeads.size - 1 - index)
+                } else if (toggled) {
+                    chatHeads.forEachIndexed { index, it ->
+                        it.animate(metrics.widthPixels - it.chatHead.width - (index * (it.chatHead.width)), 0, 200)
+                    }
+                } else if (topChatHead?.chatHead?.x!! >= metrics.widthPixels / 2) {
+                    reversedChatHeads.forEachIndexed { index, element ->
+                        element.animate(metrics.widthPixels - topChatHead?.chatHead?.width!! + CHAT_HEAD_OUT_OF_SCREEN_X + CHAT_HEAD_PADDING * (chatHeads.size - 1 - index), element.chatHead.y, 200)
                     }
                     isOnRight = true
                 } else if (topChatHead?.chatHead?.x!! < metrics.widthPixels / 2) {
-                    chatHeads.asReversed().forEachIndexed { index, element ->
-                        element.chatHead.x = -CHAT_HEAD_OUT_OF_SCREEN_X - CHAT_HEAD_PADDING * (chatHeads.size - 1 - index)
+                    reversedChatHeads.forEachIndexed { index, element ->
+                        element.animate(-CHAT_HEAD_OUT_OF_SCREEN_X - CHAT_HEAD_PADDING * (chatHeads.size - 1 - index), element.chatHead.y, 200)
                     }
                     isOnRight = false
                 }
+
+                moving = false
             }
             MotionEvent.ACTION_MOVE -> {
                 if (distance(initialTouchX, event.rawX, initialTouchY, event.rawY) > CHAT_HEAD_DRAG_TOLERANCE.pow(2)) {
@@ -128,12 +148,19 @@ class ChatHeadsArrangement : View.OnTouchListener {
                 }
 
                 if (moving) {
-                    chatHeads.asReversed().forEachIndexed { index, element ->
-                        element.chatHead.x = (initialX + (event.rawX - initialTouchX)).toInt() - (CHAT_HEAD_PADDING * (chatHeads.size - 1 - index)) * if (isOnRight) -1 else 1
-                        element.chatHead.y = (initialY + (event.rawY - initialTouchY)).toInt()
+                    if (toggled) {
+                        currentChatHead.animate((initialX + (event.rawX - initialTouchX)).toInt(), (initialY + (event.rawY - initialTouchY)).toInt())
+                    } else {
+                        reversedChatHeads.forEachIndexed { index, element ->
+                            element.animate((initialX + (event.rawX - initialTouchX)).toInt() - (CHAT_HEAD_PADDING * (chatHeads.size - 1 - index)) * if (isOnRight) -1 else 1, (initialY + (event.rawY - initialTouchY)).toInt())
+                        }
                     }
                 }
             }
+        }
+
+        chatHeads.forEach {
+            OverlayService.instance.windowManager.updateViewLayout(it.chatHead, it.chatHead.params)
         }
 
         return true
