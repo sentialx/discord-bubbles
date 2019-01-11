@@ -28,7 +28,7 @@ class ImageHelper {
         }
 
         fun addShadow(src: Bitmap): Bitmap {
-            val bmOut = Bitmap.createBitmap(src.width + 10, src.height + 10, Bitmap.Config.ARGB_8888)
+            val bmOut = Bitmap.createBitmap(src.width + 10, src.height + 20, Bitmap.Config.ARGB_8888)
 
             val centerX = (bmOut.width / 2 - src.width / 2).toFloat()
             val centerY = (bmOut.height / 2 - src.height / 2).toFloat()
@@ -36,12 +36,12 @@ class ImageHelper {
             val canvas = Canvas(bmOut)
             canvas.drawColor(0, PorterDuff.Mode.CLEAR)
             val ptBlur = Paint()
-            ptBlur.maskFilter = BlurMaskFilter(5f, BlurMaskFilter.Blur.NORMAL)
+            ptBlur.maskFilter = BlurMaskFilter(6f, BlurMaskFilter.Blur.NORMAL)
             val offsetXY = IntArray(2)
             val bmAlpha = src.extractAlpha(ptBlur, offsetXY)
             val ptAlphaColor = Paint()
             ptAlphaColor.color = Color.argb(50, 0, 0, 0)
-            canvas.drawBitmap(bmAlpha, centerX + offsetXY[0] + 3f, centerY  + offsetXY[1] + 3f, ptAlphaColor)
+            canvas.drawBitmap(bmAlpha, centerX + offsetXY[0], centerY  + offsetXY[1] + 4f, ptAlphaColor)
             bmAlpha.recycle()
             canvas.drawBitmap(src, centerX, centerY,null)
             return bmOut

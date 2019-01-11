@@ -13,9 +13,10 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
     companion object {
         val CHAT_HEAD_OUT_OF_SCREEN_X: Int = WindowManagerHelper.dpToPx(12f)
         val CHAT_HEAD_SIZE: Int = WindowManagerHelper.dpToPx(64f)
-        const val CHAT_HEAD_DRAG_TOLERANCE: Float = 20f
         val CHAT_HEAD_PADDING: Int = WindowManagerHelper.dpToPx(6f)
-        val CHAT_HEAD_EXPANDED_PADDING: Int = WindowManagerHelper.dpToPx(4f)
+        val CHAT_HEAD_EXPANDED_PADDING: Int = WindowManagerHelper.dpToPx(2f)
+
+        const val CHAT_HEAD_DRAG_TOLERANCE: Float = 20f
     }
 
     var chatHeads = ArrayList<ChatHeadContainer>()
@@ -57,11 +58,22 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
     init {
         params.gravity = Gravity.START or Gravity.TOP
         motionTrackerParams.gravity = Gravity.START or Gravity.TOP
+        params.dimAmount = 0.5f
 
         OverlayService.instance.windowManager.addView(motionTracker, motionTrackerParams)
         OverlayService.instance.windowManager.addView(this, params)
 
         motionTracker.setOnTouchListener(this)
+
+        this.setOnTouchListener{ v, event ->
+            v!!.performClick()
+
+            if (v == this) {
+                collapseChatHeads()
+            }
+
+            return@setOnTouchListener true
+        }
     }
 
     fun setTop(chatHead: ChatHeadContainer) {
@@ -102,13 +114,13 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
     fun collapseChatHeads() {
         chatHeads.forEachIndexed { index, element ->
             element.isSelected = false
-            element.animate(lastX - (CHAT_HEAD_PADDING * index * if (isOnRight) -1 else 1), lastY, 200)
+            element.animate(lastX - (CHAT_HEAD_PADDING * index * if (isOnRight) -1 else 1), lastY, 150)
             element.chatHead.setOnTouchListener(null)
 
             motionTrackerParams.flags = motionTrackerParams.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
             OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
 
-            params.flags = params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+            params.flags = (params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()
             OverlayService.instance.windowManager.updateViewLayout(this, params)
 
             //element.chatHeadLayout.hide()
@@ -121,7 +133,7 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
         return ((x1 - x2).pow(2) + (y1-y2).pow(2))
     }
 
-    val onChatHeadTouch: View.OnTouchListener = View.OnTouchListener { view, event ->
+    private val onChatHeadTouch: View.OnTouchListener = View.OnTouchListener { view, event ->
         val currentChatHead = chatHeads.find { it.chatHead == view }!!
 
         val metrics = WindowManagerHelper.getScreenSize()
@@ -132,6 +144,9 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                 initialY = currentChatHead!!.chatHead.y
                 initialTouchX = event.rawX
                 initialTouchY = event.rawY
+
+                currentChatHead.chatHead.scaleX = 0.95f
+                currentChatHead.chatHead.scaleY = 0.95f
             }
             MotionEvent.ACTION_UP -> {
                 if (!moving) {
@@ -148,6 +163,9 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                 } else {
                     currentChatHead.animate(metrics.widthPixels - currentChatHead.chatHead.width - (chatHeads.indexOf(currentChatHead) * (currentChatHead.chatHead.width + CHAT_HEAD_EXPANDED_PADDING)).toFloat(), 0f, 200)
                 }
+
+                currentChatHead.chatHead.scaleX = 1f
+                currentChatHead.chatHead.scaleY = 1f
 
                 moving = false
             }
@@ -176,6 +194,9 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                 initialY = topChatHead!!.chatHead.y
                 initialTouchX = event.rawX
                 initialTouchY = event.rawY
+
+                topChatHead?.chatHead?.scaleX = 0.95f
+                topChatHead?.chatHead?.scaleY = 0.95f
             }
             MotionEvent.ACTION_UP -> {
                 if (!moving) {
@@ -186,7 +207,7 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                         lastY = topChatHead?.chatHead?.y!!
 
                         chatHeads.forEachIndexed { index, it ->
-                            it.animate(metrics.widthPixels - it.chatHead.width - (index * (it.chatHead.width + CHAT_HEAD_EXPANDED_PADDING)).toFloat(), 0f, 200)
+                            it.animate(metrics.widthPixels - it.chatHead.width - (index * (it.chatHead.width + CHAT_HEAD_EXPANDED_PADDING)).toFloat(), 0f, 150)
                             it.chatHead.setOnTouchListener(onChatHeadTouch)
                         }
 
@@ -197,7 +218,7 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                         motionTrackerParams.flags = motionTrackerParams.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                         OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
 
-                        params.flags = params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+                        params.flags = (params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()) or WindowManager.LayoutParams.FLAG_DIM_BEHIND
                         OverlayService.instance.windowManager.updateViewLayout(this, params)
                     }
                 } else if (toggled) {
@@ -222,6 +243,9 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
 
                     OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
                 }
+
+                topChatHead?.chatHead?.scaleX = 1f
+                topChatHead?.chatHead?.scaleY = 1f
 
                 moving = false
             }

@@ -24,8 +24,8 @@ class ChatHead(context: Context): View(context) {
         params.gravity = Gravity.TOP or Gravity.START
         params.x = 0
         params.y = 0
-        params.width = ChatHeadsArrangement.CHAT_HEAD_SIZE + 10
-        params.height = ChatHeadsArrangement.CHAT_HEAD_SIZE + 10
+        params.width = ChatHeadsArrangement.CHAT_HEAD_SIZE + 15
+        params.height = ChatHeadsArrangement.CHAT_HEAD_SIZE + 30
 
         this.setLayerType(View.LAYER_TYPE_HARDWARE, paint)
 
