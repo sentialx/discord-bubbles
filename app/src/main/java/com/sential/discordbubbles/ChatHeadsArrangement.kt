@@ -2,12 +2,14 @@ package com.sential.discordbubbles
 
 import android.content.Context
 import android.graphics.PixelFormat
-import android.view.Gravity
-import android.view.MotionEvent
-import android.view.View
-import android.view.WindowManager
+import android.view.*
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import kotlin.math.pow
+import android.view.animation.Animation
+import android.view.animation.ScaleAnimation
+
+
 
 class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout(context) {
     companion object {
@@ -15,6 +17,7 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
         val CHAT_HEAD_SIZE: Int = WindowManagerHelper.dpToPx(64f)
         val CHAT_HEAD_PADDING: Int = WindowManagerHelper.dpToPx(6f)
         val CHAT_HEAD_EXPANDED_PADDING: Int = WindowManagerHelper.dpToPx(2f)
+        val CHAT_HEAD_EXPANDED_MARGIN_TOP: Float = WindowManagerHelper.dpToPx(4f).toFloat()
 
         const val CHAT_HEAD_DRAG_TOLERANCE: Float = 20f
     }
@@ -37,7 +40,9 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
 
     private var isOnRight = false
 
-    var motionTracker = FrameLayout(context)
+    var content = LayoutInflater.from(OverlayService.instance).inflate(R.layout.chat_head_content, null)
+
+    var motionTracker = LinearLayout(context)
 
     var motionTrackerParams = WindowManager.LayoutParams(
         CHAT_HEAD_SIZE,
@@ -57,22 +62,31 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
 
     init {
         params.gravity = Gravity.START or Gravity.TOP
-        motionTrackerParams.gravity = Gravity.START or Gravity.TOP
         params.dimAmount = 0.5f
+
+        motionTrackerParams.gravity = Gravity.START or Gravity.TOP
 
         OverlayService.instance.windowManager.addView(motionTracker, motionTrackerParams)
         OverlayService.instance.windowManager.addView(this, params)
+        this.addView(content)
+
+        content.visibility = View.GONE
 
         motionTracker.setOnTouchListener(this)
 
         this.setOnTouchListener{ v, event ->
-            v!!.performClick()
+            v.performClick()
 
-            if (v == this) {
-                collapseChatHeads()
+            when (event.action) {
+                MotionEvent.ACTION_UP -> {
+                    if (v == this) {
+                        collapseChatHeads()
+                    }
+                }
+
             }
 
-            return@setOnTouchListener true
+            return@setOnTouchListener false
         }
     }
 
@@ -116,15 +130,38 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
             element.isSelected = false
             element.animate(lastX - (CHAT_HEAD_PADDING * index * if (isOnRight) -1 else 1), lastY, 150)
             element.chatHead.setOnTouchListener(null)
-
-            motionTrackerParams.flags = motionTrackerParams.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
-            OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
-
-            params.flags = (params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()
-            OverlayService.instance.windowManager.updateViewLayout(this, params)
-
-            //element.chatHeadLayout.hide()
         }
+
+        motionTrackerParams.flags = motionTrackerParams.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+        OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
+
+        params.flags = (params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()
+        OverlayService.instance.windowManager.updateViewLayout(this, params)
+
+        content.visibility = View.GONE
+
+        content.visibility = View.VISIBLE
+        val anim = ScaleAnimation(
+            1f,
+            0f,
+            1f,
+            0f,
+            Animation.RELATIVE_TO_SELF,
+            if (isOnRight) 0.95f else 0.05f,
+            Animation.RELATIVE_TO_SELF,
+            lastY / this.height + 0.08f
+        )
+        anim.duration = 100
+        anim.fillAfter = true
+        content.startAnimation(anim)
+
+        android.os.Handler().postDelayed(
+            {
+                content.visibility = View.GONE
+            }, 100
+        )
+
+
 
         toggled = false
     }
@@ -161,7 +198,7 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                         //currentChatHead.chatHeadLayout.show()
                     }
                 } else {
-                    currentChatHead.animate(metrics.widthPixels - currentChatHead.chatHead.width - (chatHeads.indexOf(currentChatHead) * (currentChatHead.chatHead.width + CHAT_HEAD_EXPANDED_PADDING)).toFloat(), 0f, 200)
+                    currentChatHead.animate(metrics.widthPixels - currentChatHead.chatHead.width - (chatHeads.indexOf(currentChatHead) * (currentChatHead.chatHead.width + CHAT_HEAD_EXPANDED_PADDING)).toFloat(), CHAT_HEAD_EXPANDED_MARGIN_TOP, 200)
                 }
 
                 currentChatHead.chatHead.scaleX = 1f
@@ -207,11 +244,28 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                         lastY = topChatHead?.chatHead?.y!!
 
                         chatHeads.forEachIndexed { index, it ->
-                            it.animate(metrics.widthPixels - it.chatHead.width - (index * (it.chatHead.width + CHAT_HEAD_EXPANDED_PADDING)).toFloat(), 0f, 150)
+                            it.animate(metrics.widthPixels - it.chatHead.width - (index * (it.chatHead.width + CHAT_HEAD_EXPANDED_PADDING)).toFloat(), CHAT_HEAD_EXPANDED_MARGIN_TOP, 150)
                             it.chatHead.setOnTouchListener(onChatHeadTouch)
                         }
 
-                        //topChatHead?.chatHeadLayout?.show()
+                        android.os.Handler().postDelayed(
+                            {
+                                content.visibility = View.VISIBLE
+                                val anim = ScaleAnimation(
+                                    0f,
+                                    1f,
+                                    0f,
+                                    1f,
+                                    Animation.RELATIVE_TO_SELF,
+                                    0.95f,
+                                    Animation.RELATIVE_TO_SELF,
+                                    0.08f
+                                )
+                                anim.duration = 100
+                                anim.fillAfter = true
+                                content.startAnimation(anim)
+                            }, 220
+                        )
 
                         topChatHead?.isSelected = true
 
