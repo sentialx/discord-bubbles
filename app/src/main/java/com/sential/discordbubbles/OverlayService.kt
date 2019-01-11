@@ -23,11 +23,16 @@ class OverlayService : Service() {
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-        chatHeadsArrangement = ChatHeadsArrangement()
+        chatHeadsArrangement = ChatHeadsArrangement(this)
 
         val innerReceiver = InnerReceiver()
         val intentFilter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
         registerReceiver(innerReceiver, intentFilter)
+
+        chatHeadsArrangement.addChatHead(true)
+        chatHeadsArrangement.addChatHead()
+        chatHeadsArrangement.addChatHead()
+        chatHeadsArrangement.addChatHead()
     }
 
     override fun onDestroy() {

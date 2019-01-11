@@ -12,25 +12,11 @@ class ChatHead(context: Context): View(context) {
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManagerHelper.getLayoutFlag(),
-        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+        0,
         PixelFormat.TRANSLUCENT
     )
 
     val paint = Paint()
-
-    var x: Int
-        get() = params.x
-        set(value) {
-            params.x = value
-            OverlayService.instance.windowManager.updateViewLayout(this, params)
-        }
-
-    var y: Int
-        get() = params.y
-        set(value) {
-            params.y = value
-            OverlayService.instance.windowManager.updateViewLayout(this, params)
-        }
 
     val bitmap = ImageHelper.addShadow(ImageHelper.getCircularBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.test)))
 
@@ -43,7 +29,7 @@ class ChatHead(context: Context): View(context) {
 
         this.setLayerType(View.LAYER_TYPE_HARDWARE, paint)
 
-        OverlayService.instance.windowManager.addView(this, params)
+        OverlayService.instance.chatHeadsArrangement.addView(this, params)
     }
 
     override fun onDraw(canvas: Canvas?) {
