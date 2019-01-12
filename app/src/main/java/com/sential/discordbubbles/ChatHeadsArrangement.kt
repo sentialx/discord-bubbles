@@ -146,7 +146,7 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
             } else {
                 horizontalSpringChain.addSpring(object : SimpleSpringListener() {
                     override fun onSpringUpdate(spring: Spring?) {
-                        element.chatHead.springX.currentValue = spring!!.currentValue + index * 20
+                        element.chatHead.springX.currentValue = spring!!.currentValue + index * 20 * if (isOnRight) 1 else -1
                     }
                 })
                 verticalSpringChain.addSpring(object : SimpleSpringListener() {
