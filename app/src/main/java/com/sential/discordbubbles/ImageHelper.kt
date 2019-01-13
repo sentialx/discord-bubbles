@@ -40,7 +40,7 @@ class ImageHelper {
             val offsetXY = IntArray(2)
             val bmAlpha = src.extractAlpha(ptBlur, offsetXY)
             val ptAlphaColor = Paint()
-            ptAlphaColor.color = Color.argb(50, 0, 0, 0)
+            ptAlphaColor.color = Color.argb(80, 0, 0, 0)
             canvas.drawBitmap(bmAlpha, centerX + offsetXY[0], centerY  + offsetXY[1] + 4f, ptAlphaColor)
             bmAlpha.recycle()
             canvas.drawBitmap(src, centerX, centerY,null)

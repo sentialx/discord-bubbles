@@ -12,6 +12,7 @@ import android.view.VelocityTracker
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.SpringChain
+import kotlin.math.abs
 
 class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout(context) {
     companion object {
@@ -126,8 +127,8 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
             spring.destroy()
         }
 
-        horizontalSpringChain = SpringChain.create(0, 0, 200, 13)
-        verticalSpringChain = SpringChain.create(0, 0, 200, 13)
+        horizontalSpringChain = SpringChain.create(0, 0, 200, 15)
+        verticalSpringChain = SpringChain.create(0, 0, 200, 15)
 
         if (isTop) setTop(chatHeadContainer)
 
@@ -256,6 +257,9 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
         return@OnTouchListener true
     }
 
+    var initialVelocityX = 0.0
+    var initialVelocityY = 0.0
+
     fun onSpringUpdate(chatHead: ChatHead, spring: Spring, totalVelocity: Int) {
         val metrics = WindowManagerHelper.getScreenSize()
 
@@ -267,6 +271,14 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
             if (spring == chatHead.springY) {
                 verticalSpringChain.controlSpring?.currentValue = spring.currentValue
             }
+        }
+
+        if (abs(chatHead.springY.velocity) > 3000 && (chatHead.springX.currentValue > metrics.widthPixels - chatHead.width || chatHead.springX.currentValue < 0.0)) {
+            chatHead.springY.velocity = 3000.0 * if (initialVelocityY < 0) -1 else 1
+        }
+
+        if ((chatHead.springX.currentValue < 0.0 && initialVelocityX < -3000 || chatHead.springX.currentValue > metrics.widthPixels - chatHead.width) && abs(initialVelocityY) < abs(initialVelocityX)) {
+            chatHead.springY.velocity = 0.0
         }
 
         if (Math.abs(totalVelocity) < WindowManagerHelper.dpToPx(5000f) && !moving) {
@@ -286,7 +298,7 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                 val yPosition = chatHead.springY.currentValue
                 if (yPosition + chatHead.height > metrics.heightPixels && chatHead.springY.velocity > 0) {
                     chatHead.springY.springConfig = SpringConfigs.NOT_DRAGGING
-                    chatHead.springY.endValue = metrics.heightPixels - chatHead.height.toDouble() - 25
+                    chatHead.springY.endValue = metrics.heightPixels - chatHead.height.toDouble() - WindowManagerHelper.dpToPx(25f)
                 } else if (yPosition < 0 && chatHead.springY.velocity < 0) {
                     chatHead.springY.springConfig = SpringConfigs.NOT_DRAGGING
                     chatHead.springY.endValue = 0.0
@@ -409,7 +421,8 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                     topChatHead?.chatHead!!.springY.springConfig = SpringConfigs.NOT_DRAGGING
 
                     if (topChatHead?.chatHead?.x!! >= metrics.widthPixels / 2) {
-                        topChatHead!!.chatHead.springX.endValue = metrics.widthPixels - topChatHead?.chatHead?.width!! + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
+                        topChatHead!!.chatHead.springX.endValue = metrics.widthPixels - topChatHead?.chatHead?.width!! +
+                                CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
                         topChatHead!!.chatHead.springY.endValue = topChatHead!!.chatHead.y.toDouble()
 
                         isOnRight = true
@@ -420,6 +433,9 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                         isOnRight = false
                     }
                 }
+
+                initialVelocityX = xVelocity
+                initialVelocityY = yVelocity
 
                 topChatHead?.chatHead?.springX?.velocity = xVelocity
                 topChatHead?.chatHead?.springY?.velocity = yVelocity
