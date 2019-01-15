@@ -51,6 +51,7 @@ class ChatHead(context: Context): View(context), SpringListener {
                 x = spring.currentValue.toFloat()
             }
         })
+        springX.springConfig = SpringConfigs.NOT_DRAGGING
         springX.addListener(this)
 
         springY.addListener(object : SimpleSpringListener() {
@@ -58,6 +59,7 @@ class ChatHead(context: Context): View(context), SpringListener {
                 y = spring.currentValue.toFloat()
             }
         })
+        springY.springConfig = SpringConfigs.NOT_DRAGGING
         springY.addListener(this)
 
         this.setLayerType(View.LAYER_TYPE_HARDWARE, paint)
