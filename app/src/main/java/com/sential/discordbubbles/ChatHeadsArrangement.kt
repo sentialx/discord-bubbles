@@ -43,6 +43,7 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
     private var wasMoving = false
     private var toggled = false
     private var motionTrackerUpdated = false
+    private var collapsing = false
 
     private var horizontalSpringChain: SpringChain? = null
     private var verticalSpringChain: SpringChain? = null
@@ -75,7 +76,7 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
 
     init {
         params.gravity = Gravity.START or Gravity.TOP
-        params.dimAmount = 0.5f
+        params.dimAmount = 0.7f
 
         motionTrackerParams.gravity = Gravity.START or Gravity.TOP
 
@@ -148,7 +149,11 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                 horizontalSpringChain!!.addSpring(object : SimpleSpringListener() {
                     override fun onSpringUpdate(spring: Spring?) {
                         if (!toggled) {
-                            element.chatHead.springX.currentValue = spring!!.currentValue + (chatHeads.size - 1 - index) * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
+                            if (collapsing) {
+                                element.chatHead.springX.endValue = spring!!.currentValue + (chatHeads.size - 1 - index) * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
+                            } else {
+                                element.chatHead.springX.currentValue = spring!!.currentValue + (chatHeads.size - 1 - index) * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
+                            }
                         }
                     }
                 })
@@ -184,6 +189,7 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
 
     fun collapseChatHeads() {
         toggled = false
+        collapsing = true
 
         topChatHead!!.chatHead.springX.endValue = lastX.toDouble()
         topChatHead!!.chatHead.springY.endValue = lastY.toDouble()
@@ -216,8 +222,8 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                 initialTouchX = event.rawX
                 initialTouchY = event.rawY
 
-                currentChatHead.chatHead.scaleX = 0.95f
-                currentChatHead.chatHead.scaleY = 0.95f
+                currentChatHead.chatHead.scaleX = 0.9f
+                currentChatHead.chatHead.scaleY = 0.9f
             }
             MotionEvent.ACTION_UP -> {
                 if (!moving) {
@@ -273,12 +279,22 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
         }
 
         if (wasMoving) {
+            motionTrackerParams.x = if (isOnRight) metrics.widthPixels - chatHead.width else 0
+
             if (abs(chatHead.springY.velocity) > 3000 && (chatHead.springX.currentValue > metrics.widthPixels - chatHead.width + CHAT_HEAD_OUT_OF_SCREEN_X / 2 || chatHead.springX.currentValue < -CHAT_HEAD_OUT_OF_SCREEN_X / 2) && abs(initialVelocityX) > 3000) {
                 chatHead.springY.velocity = 3000.0 * if (initialVelocityY < 0) -1 else 1
             }
 
             if ((chatHead.springX.currentValue < -CHAT_HEAD_OUT_OF_SCREEN_X / 2 && initialVelocityX < -3000 || chatHead.springX.currentValue > metrics.widthPixels - chatHead.width  + CHAT_HEAD_OUT_OF_SCREEN_X / 2) && abs(initialVelocityY) < abs(initialVelocityX)) {
                 chatHead.springY.velocity = 0.0
+            }
+
+            if (abs(chatHead.springY.velocity) > 500) {
+                if (chatHead.springY.currentValue < 0) {
+                    chatHead.springY.velocity = -500.0
+                } else if (chatHead.springY.currentValue > metrics.heightPixels) {
+                    chatHead.springY.velocity = 500.0
+                }
             }
 
             if (Math.abs(totalVelocity) < WindowManagerHelper.dpToPx(5000f) && !moving) {
@@ -306,8 +322,13 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                     }
                 }
 
-                motionTrackerParams.x = chatHead.springX.endValue.toInt()
                 motionTrackerParams.y = chatHead.springY.endValue.toInt()
+
+                OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
+            }
+
+            if (Math.abs(totalVelocity) < WindowManagerHelper.dpToPx(10f) && !moving) {
+                motionTrackerParams.y = chatHead.springY.currentValue.toInt() + chatHead.springY.velocity.toInt()
 
                 OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
             }
@@ -325,9 +346,10 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                 initialTouchY = event.rawY
 
                 wasMoving = false
+                collapsing = false
 
-                topChatHead?.chatHead?.scaleX = 0.95f
-                topChatHead?.chatHead?.scaleY = 0.95f
+                topChatHead?.chatHead?.scaleX = 0.9f
+                topChatHead?.chatHead?.scaleY = 0.9f
 
                 topChatHead?.chatHead!!.springX.springConfig = SpringConfigs.DRAGGING
                 topChatHead?.chatHead!!.springY.springConfig = SpringConfigs.DRAGGING
@@ -391,12 +413,12 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                         val newVelocity = ((-topChatHead!!.chatHead.springX.currentValue -  CHAT_HEAD_OUT_OF_SCREEN_X) * SpringConfigs.DRAGGING.friction)
                         maxVelocityX = newVelocity - 5000
                         if (xVelocity > maxVelocityX)
-                            xVelocity = newVelocity - 1500
+                            xVelocity = newVelocity - 500
                     } else if (xVelocity > 3500) {
                         val newVelocity = ((metrics.widthPixels - topChatHead!!.chatHead.springX.currentValue - topChatHead!!.chatHead.width + CHAT_HEAD_OUT_OF_SCREEN_X) * SpringConfigs.DRAGGING.friction)
                         maxVelocityX = newVelocity + 5000
                         if (maxVelocityX > xVelocity)
-                            xVelocity = newVelocity + 1500
+                            xVelocity = newVelocity + 500
                     } else if (yVelocity > 20 || yVelocity < -20) {
                         topChatHead?.chatHead!!.springX.springConfig = SpringConfigs.NOT_DRAGGING
 
@@ -426,20 +448,20 @@ class ChatHeadsArrangement(context: Context) : View.OnTouchListener, FrameLayout
                         }
                     }
 
-                    initialVelocityX = xVelocity
-                    initialVelocityY = yVelocity
-
                     if (xVelocity < 0) {
                         topChatHead?.chatHead?.springX?.velocity = max(xVelocity, maxVelocityX)
                     } else {
                         topChatHead?.chatHead?.springX?.velocity = min(xVelocity, maxVelocityX)
                     }
 
-                    topChatHead?.chatHead?.springY?.velocity = yVelocity
+                    initialVelocityX = topChatHead!!.chatHead.springX.velocity
+                    initialVelocityY = topChatHead!!.chatHead.springY.velocity
 
-                    topChatHead?.chatHead?.scaleX = 1f
-                    topChatHead?.chatHead?.scaleY = 1f
+                    topChatHead?.chatHead?.springY?.velocity = yVelocity
                 }
+
+                topChatHead?.chatHead?.scaleX = 1f
+                topChatHead?.chatHead?.scaleY = 1f
             }
             MotionEvent.ACTION_MOVE -> {
                 if (distance(initialTouchX, event.rawX, initialTouchY, event.rawY) > CHAT_HEAD_DRAG_TOLERANCE.pow(2)) {
