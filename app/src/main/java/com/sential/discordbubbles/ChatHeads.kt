@@ -1,6 +1,7 @@
 package com.sential.discordbubbles
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.view.*
 import android.widget.FrameLayout
@@ -48,6 +49,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     private var toggled = false
     private var motionTrackerUpdated = false
     private var collapsing = false
+    private var blockAnim = false
 
     private var horizontalSpringChain: SpringChain? = null
     private var verticalSpringChain: SpringChain? = null
@@ -63,9 +65,9 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
     private var motionTrackerParams = WindowManager.LayoutParams(
         CHAT_HEAD_SIZE,
-        CHAT_HEAD_SIZE,
+        CHAT_HEAD_SIZE + 16,
         WindowManagerHelper.getLayoutFlag(),
-        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
         PixelFormat.TRANSLUCENT
     )
 
@@ -166,7 +168,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             } else {
                 horizontalSpringChain!!.addSpring(object : SimpleSpringListener() {
                     override fun onSpringUpdate(spring: Spring?) {
-                        if (!toggled) {
+                        if (!toggled && !blockAnim) {
                             if (collapsing) {
                                 element.springX.endValue = spring!!.currentValue + (chatHeads.size - 1 - index) * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
                             } else {
@@ -177,7 +179,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 })
                 verticalSpringChain!!.addSpring(object : SimpleSpringListener() {
                     override fun onSpringUpdate(spring: Spring?) {
-                        if (!toggled) {
+                        if (!toggled && !blockAnim) {
                             element.springY.currentValue = spring!!.currentValue
                         }
                     }
@@ -190,7 +192,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         val chatHead = ChatHead(this, server, channel)
         chatHeads.add(chatHead)
 
-        var lx = 0.0
+        var lx = -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
         var ly = 0.0
 
         if (topChatHead != null) {
@@ -202,12 +204,18 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         destroySpringChains()
         resetSpringChains()
 
-        toggled = true
+        blockAnim = true
 
         chatHeads.forEachIndexed { index, element ->
             element.springX.currentValue = lx + (chatHeads.size - 1 - index) * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
             element.springY.currentValue = ly
         }
+
+        motionTrackerParams.x = chatHead.springX.currentValue.toInt()
+        motionTrackerParams.y = chatHead.springY.currentValue.toInt()
+        motionTrackerParams.flags = motionTrackerParams.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+
+        OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
 
         return chatHead
     }
@@ -315,14 +323,10 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         chatHead.springY.endValue = 0.0
                     }
                 }
-
-                motionTrackerParams.y = chatHead.springY.endValue.toInt()
-
-                OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
             }
 
-            if (Math.abs(totalVelocity) < WindowManagerHelper.dpToPx(10f) && !moving) {
-                motionTrackerParams.y = chatHead.springY.currentValue.toInt() + chatHead.springY.velocity.toInt()
+            if (Math.abs(totalVelocity) % 10 == 0 && !moving) {
+                motionTrackerParams.y = topChatHead!!.springY.currentValue.toInt()
 
                 OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
             }
@@ -343,7 +347,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
                 wasMoving = false
                 collapsing = false
-                toggled = false
+                blockAnim = false
 
                 topChatHead!!.scaleX = 0.9f
                 topChatHead!!.scaleY = 0.9f
@@ -361,11 +365,6 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 } else {
                     velocityTracker?.clear()
                 }
-
-                motionTrackerParams.x = topChatHead!!.springX.currentValue.toInt()
-                motionTrackerParams.y = topChatHead!!.springY.currentValue.toInt()
-
-                OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
 
                 velocityTracker?.addMovement(event)
             }
