@@ -21,13 +21,13 @@ class NotifyService : NotificationListenerService() {
                 val messages = sbn.notification.extras.get("android.messages") as Array<Parcelable>
                 val msgBundle = messages.last() as Bundle
 
-                var chatHead = OverlayService.instance.chatHeadsArrangement.chatHeads.find { it.server == title }
+                var chatHead = OverlayService.instance.chatHeads.chatHeads.find { it.server == title }
 
                 if (chatHead == null) {
-                    chatHead = OverlayService.instance.chatHeadsArrangement.addChatHead(true)
+                    chatHead = OverlayService.instance.chatHeads.add(true)
                 }
 
-                chatHead.chatHeadLayout.addChatItem(msgBundle.getString("sender")!!, msgBundle.get("text")!!.toString())
+                //chatHead.chatHeadLayout.addChatItem(msgBundle.getString("sender")!!, msgBundle.get("text")!!.toString())
             }
         }
     }

@@ -3,7 +3,6 @@ package com.sential.discordbubbles
 import android.graphics.*
 import android.graphics.Bitmap
 import android.graphics.PorterDuffXfermode
-import android.graphics.RectF
 import android.graphics.BlurMaskFilter
 
 class ImageHelper {
@@ -24,7 +23,7 @@ class ImageHelper {
             paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
             canvas.drawBitmap(bitmap, rect, rect, paint)
 
-            return Bitmap.createScaledBitmap(output, ChatHeadsArrangement.CHAT_HEAD_SIZE, ChatHeadsArrangement.CHAT_HEAD_SIZE, true);
+            return Bitmap.createScaledBitmap(output, ChatHeads.CHAT_HEAD_SIZE, ChatHeads.CHAT_HEAD_SIZE, true);
         }
 
         fun addShadow(src: Bitmap): Bitmap {
