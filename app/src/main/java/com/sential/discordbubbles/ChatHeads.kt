@@ -186,7 +186,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
         val metrics = WindowManagerHelper.getScreenSize()
 
-        topChatHead!!.springX.endValue = if (isOnRight) metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble() else 0.0
+        topChatHead!!.springX.endValue = if (isOnRight) metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble() else -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
         topChatHead!!.springY.endValue = lastY.toDouble()
 
         chatHeads.forEach {
@@ -341,7 +341,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 if (!moving) {
                     if (!toggled) {
                         toggled = true
-                        
+
                         lastY = topChatHead!!.springY.currentValue.toFloat()
 
                         chatHeads.forEachIndexed { index, it ->
