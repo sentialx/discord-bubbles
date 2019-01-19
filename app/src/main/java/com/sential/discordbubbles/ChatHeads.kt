@@ -41,7 +41,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     private var initialVelocityX = 0.0
     private var initialVelocityY = 0.0
 
-    private var lastY = 0.0f
+    private var lastY = 0.0
 
     private var moving = false
     private var wasMoving = false
@@ -112,7 +112,24 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         topChatHead = chatHead
     }
 
-    private fun resetSpringChains() {
+    fun fixPositions(animation: Boolean = true) {
+        if (topChatHead == null) return
+
+        val metrics = WindowManagerHelper.getScreenSize()
+
+        val newX =  if (isOnRight) metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble() else -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
+        val newY = initialY.toDouble()
+
+        if (animation) {
+            topChatHead!!.springX.endValue = newX
+            topChatHead!!.springY.endValue = newY
+        } else {
+            topChatHead!!.springX.currentValue = newX
+            topChatHead!!.springY.currentValue = newY
+        }
+    }
+
+    private fun destroySpringChains() {
         if (horizontalSpringChain != null) {
             for (spring in horizontalSpringChain!!.allSprings) {
                 spring.destroy()
@@ -124,6 +141,14 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 spring.destroy()
             }
         }
+
+        verticalSpringChain = null
+        horizontalSpringChain = null
+    }
+
+
+    private fun resetSpringChains() {
+       destroySpringChains()
 
         horizontalSpringChain = SpringChain.create(0, 0, 200, 15)
         verticalSpringChain = SpringChain.create(0, 0, 200, 15)
@@ -161,21 +186,28 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }
     }
 
-    fun add(isTop: Boolean = false, server: String, channel: String? = null): ChatHead {
-        if (isTop) {
-            chatHeads.forEach {
-                if (it.isTop) {
-                    it.isTop = false
-                }
-            }
-        }
-
+    fun add(server: String, channel: String? = null): ChatHead {
         val chatHead = ChatHead(this, server, channel)
         chatHeads.add(chatHead)
 
-        if (isTop) setTop(chatHead)
+        var lx = 0.0
+        var ly = 0.0
 
+        if (topChatHead != null) {
+            lx = topChatHead!!.springX.currentValue
+            ly = topChatHead!!.springY.currentValue
+        }
+
+        setTop(chatHead)
+        destroySpringChains()
         resetSpringChains()
+
+        toggled = true
+
+        chatHeads.forEachIndexed { index, element ->
+            element.springX.currentValue = lx + (chatHeads.size - 1 - index) * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
+            element.springY.currentValue = ly
+        }
 
         return chatHead
     }
@@ -184,10 +216,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         toggled = false
         collapsing = true
 
-        val metrics = WindowManagerHelper.getScreenSize()
-
-        topChatHead!!.springX.endValue = if (isOnRight) metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble() else -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
-        topChatHead!!.springY.endValue = lastY.toDouble()
+        fixPositions()
 
         chatHeads.forEach {
             it.isActive = false
@@ -243,6 +272,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
         if (wasMoving) {
             motionTrackerParams.x = if (isOnRight) metrics.widthPixels - chatHead.width else 0
+
+            lastY = chatHead.springY.currentValue
 
             if (abs(chatHead.springY.velocity) > 3000 && (chatHead.springX.currentValue > metrics.widthPixels - chatHead.width + CHAT_HEAD_OUT_OF_SCREEN_X / 2 || chatHead.springX.currentValue < -CHAT_HEAD_OUT_OF_SCREEN_X / 2) && abs(initialVelocityX) > 3000) {
                 chatHead.springY.velocity = 3000.0 * if (initialVelocityY < 0) -1 else 1
@@ -312,6 +343,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
                 wasMoving = false
                 collapsing = false
+                toggled = false
 
                 topChatHead!!.scaleX = 0.9f
                 topChatHead!!.scaleY = 0.9f
@@ -341,8 +373,6 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 if (!moving) {
                     if (!toggled) {
                         toggled = true
-
-                        lastY = topChatHead!!.springY.currentValue.toFloat()
 
                         chatHeads.forEachIndexed { index, it ->
                             it.springX.springConfig = SpringConfigs.NOT_DRAGGING

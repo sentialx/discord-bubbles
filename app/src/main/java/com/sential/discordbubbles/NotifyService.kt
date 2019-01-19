@@ -38,7 +38,7 @@ class NotifyService : NotificationListenerService() {
                     var chatHead = OverlayService.instance.chatHeads.chatHeads.find { it.server == server }
 
                     if (chatHead == null) {
-                        chatHead = OverlayService.instance.chatHeads.add(true, server, channel)
+                        chatHead = OverlayService.instance.chatHeads.add(server, channel)
                     }
 
                     val msg = Message(msgBundle.getString("sender")!!, msgBundle.get("text")!!.toString(), channel)
