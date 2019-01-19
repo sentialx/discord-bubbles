@@ -41,7 +41,6 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     private var initialVelocityX = 0.0
     private var initialVelocityY = 0.0
 
-    private var lastX = 0.0f
     private var lastY = 0.0f
 
     private var moving = false
@@ -185,7 +184,9 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         toggled = false
         collapsing = true
 
-        topChatHead!!.springX.endValue = lastX.toDouble()
+        val metrics = WindowManagerHelper.getScreenSize()
+
+        topChatHead!!.springX.endValue = if (isOnRight) metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble() else 0.0
         topChatHead!!.springY.endValue = lastY.toDouble()
 
         chatHeads.forEach {
@@ -340,8 +341,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 if (!moving) {
                     if (!toggled) {
                         toggled = true
-
-                        lastX = topChatHead!!.springX.currentValue.toFloat()
+                        
                         lastY = topChatHead!!.springY.currentValue.toFloat()
 
                         chatHeads.forEachIndexed { index, it ->
