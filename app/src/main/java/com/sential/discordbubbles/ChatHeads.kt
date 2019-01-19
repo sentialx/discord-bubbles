@@ -213,7 +213,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         motionTrackerParams.flags = motionTrackerParams.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
         OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
 
-        params.flags = (params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()
+        params.flags = ((params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()) and WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv() or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         OverlayService.instance.windowManager.updateViewLayout(this, params)
     }
 
@@ -248,13 +248,16 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             }
         }
 
-        var tmpChatHead = chatHead
-        if (!chatHead.isActive) tmpChatHead = topChatHead!!
+        var tmpChatHead: ChatHead? = null
+        if (collapsing) tmpChatHead = topChatHead!!
+        else if (chatHead.isActive) tmpChatHead = chatHead
 
-        content.x = tmpChatHead.springX.currentValue.toFloat() - metrics.widthPixels.toFloat() + ((chatHeads.size - 1 - chatHeads.indexOf(tmpChatHead)) * (tmpChatHead.width + CHAT_HEAD_EXPANDED_PADDING)) + tmpChatHead.width
-        content.y = tmpChatHead.springY.currentValue.toFloat()
+        if (tmpChatHead != null) {
+            content.x = tmpChatHead.springX.currentValue.toFloat() - metrics.widthPixels.toFloat() + ((chatHeads.size - 1 - chatHeads.indexOf(tmpChatHead)) * (tmpChatHead.width + CHAT_HEAD_EXPANDED_PADDING)) + tmpChatHead.width
+            content.y = tmpChatHead.springY.currentValue.toFloat()
+            content.pivotX = metrics.widthPixels.toFloat() - chatHead.width / 2 - ((chatHeads.size - 1 - chatHeads.indexOf(tmpChatHead)) * (tmpChatHead.width + CHAT_HEAD_EXPANDED_PADDING))
+        }
 
-        content.pivotX = metrics.widthPixels.toFloat() - chatHead.width / 2 - ((chatHeads.size - 1 - chatHeads.indexOf(tmpChatHead)) * (tmpChatHead.width + CHAT_HEAD_EXPANDED_PADDING))
         content.pivotY = chatHead.height.toFloat()
 
         if (wasMoving) {
@@ -370,7 +373,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         motionTrackerParams.flags = motionTrackerParams.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                         OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
 
-                        params.flags = (params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()) or WindowManager.LayoutParams.FLAG_DIM_BEHIND
+                        params.flags = (params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()) or WindowManager.LayoutParams.FLAG_DIM_BEHIND or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
                         OverlayService.instance.windowManager.updateViewLayout(this, params)
 
                         topChatHead!!.isActive = true
