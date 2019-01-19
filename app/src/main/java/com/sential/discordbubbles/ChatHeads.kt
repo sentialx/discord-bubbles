@@ -6,17 +6,14 @@ import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import kotlin.math.pow
-import android.view.animation.Animation
 import android.view.VelocityTracker
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.SpringChain
-import com.facebook.rebound.SpringSystem
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import android.view.animation.AlphaAnimation
 
 class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     companion object {
@@ -60,13 +57,10 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
     private var velocityTracker: VelocityTracker? = null
 
-    var topChatHead: ChatHead? = null
-    private var content = LayoutInflater.from(OverlayService.instance).inflate(R.layout.chat_head_content, null)
     private var motionTracker = LinearLayout(context)
 
-    var springSystem = SpringSystem.create()
-
-    var contentScaleSpring = springSystem.createSpring()
+    var topChatHead: ChatHead? = null
+    var content = Content(context)
 
     private var motionTrackerParams = WindowManager.LayoutParams(
         CHAT_HEAD_SIZE,
@@ -93,16 +87,6 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         OverlayService.instance.windowManager.addView(motionTracker, motionTrackerParams)
         OverlayService.instance.windowManager.addView(this, params)
         this.addView(content)
-
-        contentScaleSpring.addListener(object : SimpleSpringListener() {
-            override fun onSpringUpdate(spring: Spring) {
-                content.scaleX = spring.currentValue.toFloat()
-                content.scaleY = spring.currentValue.toFloat()
-            }
-        })
-        contentScaleSpring.springConfig = SpringConfigs.CONTENT_SCALE
-
-        contentScaleSpring.currentValue = 0.0
 
         motionTracker.setOnTouchListener(this)
 
@@ -178,7 +162,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }
     }
 
-    fun add(isTop: Boolean = false): ChatHead {
+    fun add(isTop: Boolean = false, server: String, channel: String? = null): ChatHead {
         if (isTop) {
             chatHeads.forEach {
                 if (it.isTop) {
@@ -187,7 +171,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             }
         }
 
-        val chatHead = ChatHead(this)
+        val chatHead = ChatHead(this, server, channel)
         chatHeads.add(chatHead)
 
         if (isTop) setTop(chatHead)
@@ -208,7 +192,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             it.isActive = false
         }
 
-        hideContent()
+        content.hideContent()
 
         motionTrackerParams.flags = motionTrackerParams.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
         OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
@@ -217,22 +201,18 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         OverlayService.instance.windowManager.updateViewLayout(this, params)
     }
 
-    fun hideContent() {
-        contentScaleSpring.endValue = 0.0
+    fun changeContent() {
+        val chatHead = chatHeads.find { it.isActive }!!
 
-        val anim = AlphaAnimation(1.0f, 0.0f)
-        anim.duration = 200
-        anim.repeatMode = Animation.RELATIVE_TO_SELF
-        content.startAnimation(anim)
-    }
+        content.messagesView.removeAllViews()
+        content.lastId = 0
 
-    fun showContent() {
-        contentScaleSpring.endValue = 1.0
+        content.channel = chatHead.channel
+        content.server = chatHead.server
 
-        val anim = AlphaAnimation(0.0f, 1.0f)
-        anim.duration = 100
-        anim.repeatMode = Animation.RELATIVE_TO_SELF
-        content.startAnimation(anim)
+        for (message in chatHead.messages) {
+            content.addMessage(message)
+        }
     }
 
     fun onSpringUpdate(chatHead: ChatHead, spring: Spring, totalVelocity: Int) {
@@ -254,7 +234,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
         if (tmpChatHead != null) {
             content.x = tmpChatHead.springX.currentValue.toFloat() - metrics.widthPixels.toFloat() + ((chatHeads.size - 1 - chatHeads.indexOf(tmpChatHead)) * (tmpChatHead.width + CHAT_HEAD_EXPANDED_PADDING)) + tmpChatHead.width
-            content.y = tmpChatHead.springY.currentValue.toFloat()
+            content.y = tmpChatHead.springY.currentValue.toFloat() - CHAT_HEAD_EXPANDED_MARGIN_TOP
             content.pivotX = metrics.widthPixels.toFloat() - chatHead.width / 2 - ((chatHeads.size - 1 - chatHeads.indexOf(tmpChatHead)) * (tmpChatHead.width + CHAT_HEAD_EXPANDED_PADDING))
         }
 
@@ -320,6 +300,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         val metrics = WindowManagerHelper.getScreenSize()
 
+        if (topChatHead == null) return true
+
         when (event!!.action) {
             MotionEvent.ACTION_DOWN -> {
                 initialX = topChatHead!!.springX.currentValue.toFloat()
@@ -378,9 +360,11 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
                         topChatHead!!.isActive = true
 
+                        changeContent()
+
                         android.os.Handler().postDelayed(
                             {
-                                showContent()
+                                content.showContent()
                             }, 200
                         )
                     }

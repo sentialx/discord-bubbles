@@ -4,6 +4,9 @@ import android.content.res.Resources
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.WindowManager
+import android.util.TypedValue
+
+
 
 class WindowManagerHelper {
     companion object {
@@ -21,6 +24,10 @@ class WindowManagerHelper {
 
         fun dpToPx(dp: Float): Int {
             return (dp * Resources.getSystem().displayMetrics.density).toInt()
+        }
+
+        fun spToPx(sp: Float): Float {
+            return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, Resources.getSystem().displayMetrics)
         }
     }
 }

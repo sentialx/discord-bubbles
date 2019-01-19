@@ -8,13 +8,9 @@ import android.view.*
 import com.facebook.rebound.*
 import kotlin.math.pow
 
-
-class ChatHead(var chatHeads: ChatHeads): View(chatHeads.context), View.OnTouchListener, SpringListener {
+class ChatHead(var chatHeads: ChatHeads, var server: String = "", var channel: String? = null): View(chatHeads.context), View.OnTouchListener, SpringListener {
     var isTop: Boolean = false
     var isActive: Boolean = false
-
-    var server: String = ""
-    var channel: String = ""
 
     var params: WindowManager.LayoutParams = WindowManager.LayoutParams(
         WindowManager.LayoutParams.WRAP_CONTENT,
@@ -32,6 +28,8 @@ class ChatHead(var chatHeads: ChatHeads): View(chatHeads.context), View.OnTouchL
     val paint = Paint()
 
     val bitmap = ImageHelper.addShadow(ImageHelper.getCircularBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.test)))
+
+    val messages = mutableListOf<Message>()
 
     private var initialX = 0.0f
     private var initialY = 0.0f
@@ -117,13 +115,15 @@ class ChatHead(var chatHeads: ChatHeads): View(chatHeads.context), View.OnTouchL
                         val selectedChatHead = chatHeads.chatHeads.find { it.isActive }!!
                         selectedChatHead.isActive = false
                         currentChatHead.isActive = true
+
+                        chatHeads.changeContent()
                     }
                 } else {
                     springX.endValue = metrics.widthPixels - width - (chatHeads.chatHeads.size - 1 - chatHeads.chatHeads.indexOf(this)) * (width + ChatHeads.CHAT_HEAD_EXPANDED_PADDING).toDouble()
                     springY.endValue = ChatHeads.CHAT_HEAD_EXPANDED_MARGIN_TOP.toDouble()
 
                     if (isActive) {
-                        chatHeads.showContent()
+                        chatHeads.content.showContent()
                     }
                 }
 
@@ -137,7 +137,7 @@ class ChatHead(var chatHeads: ChatHeads): View(chatHeads.context), View.OnTouchL
                     moving = true
 
                     if (isActive) {
-                        chatHeads.hideContent()
+                        chatHeads.content.hideContent()
                     }
                 }
 

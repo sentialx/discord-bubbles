@@ -11,35 +11,68 @@
             android:orientation="vertical"
             android:id="@+id/contentLayout"
             android:clickable="true"
-            android:layout_marginTop="75dp">
+            android:layout_marginTop="80dp">
         <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="horizontal">
-            <TextView
-                    android:textColor="#fff"
-                    android:text="#"
-                    android:alpha="0.54"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content" />
-            <TextView
-                    android:textColor="#fff"
-                    android:text=" general"
-                    android:textSize="16sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content" />
-        </LinearLayout>
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/chat"
+                android:layout_height="56dp"
+                android:padding="8dp"
                 android:paddingStart="16dp"
+                android:orientation="horizontal">
+            <LinearLayout
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+                    <TextView
+                            android:textColor="#fff"
+                            android:text="# "
+                            android:alpha="0.54"
+                            android:id="@+id/hashtag"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:layout_height="wrap_content"
+                            android:layout_width="wrap_content" />
+                    <TextView
+                            android:textColor="#fff"
+                            android:text="channel"
+                            android:textSize="16sp"
+                            android:id="@+id/channel"
+                            android:fontFamily="sans-serif-medium"
+                            android:layout_height="wrap_content"
+                            android:layout_width="wrap_content" />
+                </LinearLayout>
+
+                <TextView
+                        android:textColor="#fff"
+                        android:text="server"
+                        android:textSize="12sp"
+                        android:alpha="0.5"
+                        android:id="@+id/server"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content" />
+            </LinearLayout>
+        </LinearLayout>
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#fff" android:alpha="0.12" />
+        <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="fill_parent"
+                    android:layout_weight="2"
+                    android:id="@+id/scrollView"
+                    android:layout_height="0dp">
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:id="@+id/messages"
                 android:orientation="vertical"
-                android:layout_weight="2" />
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                />
+        </ScrollView>
         <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -49,9 +82,7 @@
                 android:textSize="14dp"
                 android:textColorHint="#8Cffffff"
                 android:id="@+id/editText"
-                android:layout_marginBottom="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_margin="8dp"
                 android:background="@drawable/input_rounded"/>
     </LinearLayout>
 </LinearLayout>
