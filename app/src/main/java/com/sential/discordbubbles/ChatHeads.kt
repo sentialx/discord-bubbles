@@ -170,7 +170,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                     override fun onSpringUpdate(spring: Spring?) {
                         if (!toggled && !blockAnim) {
                             if (collapsing) {
-                                element.springX.endValue = spring!!.currentValue + (chatHeads.size - 1 - index) * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
+                                element.springX.endValue = spring!!.endValue + (chatHeads.size - 1 - index) * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
                             } else {
                                 element.springX.currentValue = spring!!.currentValue + (chatHeads.size - 1 - index) * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
                             }
