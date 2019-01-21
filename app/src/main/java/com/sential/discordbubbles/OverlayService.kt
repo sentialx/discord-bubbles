@@ -29,14 +29,12 @@ class OverlayService : Service() {
         val intentFilter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
         registerReceiver(innerReceiver, intentFilter)
 
-        for (i in 0..3) {
-            chatHeads.add("testowy-serwer", "testowy-kanal")
-            val msg = Message("aha", "test", "testowy-kanal")
-            chatHeads.topChatHead!!.messages.add(msg)
+        chatHeads.add("test", "test")
+        val msg = Message("test", "test", "test")
+        chatHeads.topChatHead!!.messages.add(msg)
 
-            if (chatHeads.topChatHead!!.isActive) {
-                chatHeads.content.addMessage(msg)
-            }
+        if (chatHeads.topChatHead!!.isActive) {
+            chatHeads.content.addMessage(msg)
         }
     }
 
