@@ -39,6 +39,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
     var wasMoving = false
     var captured = false
+    var movingOutOfClose = false
 
     private var initialX = 0.0f
     private var initialY = 0.0f
@@ -405,7 +406,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                             it.visibility = View.INVISIBLE
                         }
                     }, 300)
-                    
+
                     return true
                 }
 
@@ -531,10 +532,14 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         topChatHead!!.springX.endValue = initialX + (event.rawX - initialTouchX).toDouble()
                         topChatHead!!.springY.endValue = initialY + (event.rawY - initialTouchY).toDouble()
 
+                        captured = false
+
+                        movingOutOfClose = true
+
                         postDelayed({
-                            captured = false
+                            movingOutOfClose = false
                         }, 100)
-                    } else {
+                    } else if (!movingOutOfClose) {
                         topChatHead!!.springX.springConfig = SpringConfigs.DRAGGING
                         topChatHead!!.springY.springConfig = SpringConfigs.DRAGGING
 
