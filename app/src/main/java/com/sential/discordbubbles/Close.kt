@@ -1,7 +1,10 @@
 package com.sential.discordbubbles
 
 import android.graphics.*
+import android.support.v4.content.ContextCompat
 import android.view.*
+import android.widget.FrameLayout
+import android.widget.RelativeLayout
 import com.facebook.rebound.*
 
 class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
@@ -13,24 +16,48 @@ class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
         PixelFormat.TRANSLUCENT
     )
 
+    private var gradientParams = FrameLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, WindowManagerHelper.dpToPx(150f))
+
     var springSystem = SpringSystem.create()
 
     var springY = springSystem.createSpring()
+    var springX = springSystem.createSpring()
+    var springAlpha = springSystem.createSpring()
     var springScale = springSystem.createSpring()
 
     val paint = Paint()
 
+    val gradient = FrameLayout(context)
+
     private var bitmapBg = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.close_bg), ChatHeads.CLOSE_SIZE, ChatHeads.CLOSE_SIZE, false)!!
     private val bitmapClose = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.close), WindowManagerHelper.dpToPx(28f), WindowManagerHelper.dpToPx(28f), false)!!
+
+    fun hide() {
+        val metrics = WindowManagerHelper.getScreenSize()
+        springY.endValue = metrics.heightPixels.toDouble() + height
+        springX.endValue = metrics.widthPixels.toDouble() / 2 - width / 2
+
+        springAlpha.endValue = 0.0
+    }
+
+    fun show() {
+        visibility = View.VISIBLE
+
+        springAlpha.endValue = 1.0
+    }
+
+    private fun onPositionUpdate() {
+        if (chatHeads.captured) {
+            chatHeads.topChatHead!!.springX.endValue = springX.currentValue + width / 2 - chatHeads.topChatHead!!.width / 2 + 2
+            chatHeads.topChatHead!!.springY.endValue = springY.currentValue + height / 2 - chatHeads.topChatHead!!.height / 2 + 2
+        }
+    }
 
     init {
         this.setLayerType(View.LAYER_TYPE_HARDWARE, paint)
 
-        val metrics = WindowManagerHelper.getScreenSize()
-
         visibility = View.INVISIBLE
-
-        springY.endValue = metrics.heightPixels.toFloat() + height.toDouble()
+        hide()
 
         springY.addListener(object : SimpleSpringListener() {
             override fun onSpringUpdate(spring: Spring) {
@@ -39,6 +66,16 @@ class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
                 if (chatHeads.captured && chatHeads.wasMoving) {
                     chatHeads.topChatHead!!.springY.currentValue = spring.currentValue
                 }
+
+                onPositionUpdate()
+            }
+        })
+
+        springX.addListener(object : SimpleSpringListener() {
+            override fun onSpringUpdate(spring: Spring) {
+                x = spring.currentValue.toFloat()
+
+                onPositionUpdate()
             }
         })
 
@@ -49,14 +86,25 @@ class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
             }
         })
 
+        springAlpha.addListener(object : SimpleSpringListener() {
+            override fun onSpringUpdate(spring: Spring) {
+                gradient.alpha = spring.currentValue.toFloat()
+            }
+        })
+
         springScale.springConfig = SpringConfigs.CLOSE_SCALE
-        springY.springConfig = SpringConfigs.NOT_DRAGGING
+        springY.springConfig = SpringConfigs.CLOSE_Y
 
         params.gravity = Gravity.START or Gravity.TOP
+        gradientParams.gravity = Gravity.BOTTOM
+
+        gradient.background = ContextCompat.getDrawable(context, R.drawable.gradient_bg)
+        springAlpha.currentValue = 0.0
 
         z = 100f
 
         chatHeads.addView(this, params)
+        chatHeads.addView(gradient, gradientParams)
     }
 
 

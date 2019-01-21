@@ -6,16 +6,14 @@ import android.graphics.PixelFormat
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import kotlin.math.pow
 import android.view.VelocityTracker
+import android.widget.RelativeLayout
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.SpringChain
 import com.facebook.rebound.SpringSystem
 import java.util.*
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.*
 
 class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     companion object {
@@ -266,6 +264,19 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }
     }
 
+    fun hideChatHeads() {
+        close.hide()
+
+        postDelayed({
+            topChatHead!!.springY.currentValue = 0.0
+            topChatHead!!.springX.currentValue = 0.0
+
+            chatHeads.forEach {
+                it.visibility = View.INVISIBLE
+            }
+        }, 300)
+    }
+
     fun onSpringUpdate(chatHead: ChatHead, spring: Spring, totalVelocity: Int) {
         val metrics = WindowManagerHelper.getScreenSize()
 
@@ -291,12 +302,17 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
         content.pivotY = chatHead.height.toFloat()
 
-        if (!moving && distance(close.x, topChatHead!!.springX.currentValue.toFloat(), close.y, topChatHead!!.springY.currentValue.toFloat()) < CLOSE_CAPTURE_DISTANCE * CLOSE_CAPTURE_DISTANCE * 2 && !captured) {
-            topChatHead!!.springX.springConfig = SpringConfigs.NOT_DRAGGING
-            topChatHead!!.springY.springConfig = SpringConfigs.NOT_DRAGGING
+        if (!moving && distance(close.x, topChatHead!!.springX.currentValue.toFloat(), close.y, topChatHead!!.springY.currentValue.toFloat()) < CLOSE_CAPTURE_DISTANCE * CLOSE_CAPTURE_DISTANCE && !captured && close.visibility == View.VISIBLE) {
+            topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
+            topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
 
-            topChatHead!!.springX.endValue = close.x.toDouble()
-            topChatHead!!.springY.endValue = close.y.toDouble()
+            topChatHead!!.springX.endValue = close.springX.endValue
+            topChatHead!!.springY.endValue = close.springY.endValue
+
+            postDelayed({
+                hideChatHeads()
+            }, 300)
+
             captured = true
         }
 
@@ -371,7 +387,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 collapsing = false
                 blockAnim = false
 
-                close.visibility = View.VISIBLE
+                close.show()
 
                 topChatHead!!.scaleX = 0.9f
                 topChatHead!!.scaleY = 0.9f
@@ -393,22 +409,17 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 velocityTracker?.addMovement(event)
             }
             MotionEvent.ACTION_UP -> {
-                close.springY.endValue = metrics.heightPixels.toFloat() + close.height.toDouble()
-
                 if (moving) wasMoving = true
 
-                if (captured) {
-                    postDelayed({
-                        topChatHead!!.springY.currentValue = 0.0
-                        topChatHead!!.springX.currentValue = 0.0
+                postDelayed({
+                    close.hide()
 
-                        chatHeads.forEach {
-                            it.visibility = View.INVISIBLE
-                        }
-                    }, 300)
+                    if (captured) {
+                        hideChatHeads()
+                    }
+                }, 200)
 
-                    return true
-                }
+                if (captured) return true
 
                 if (!moving) {
                     if (!toggled) {
@@ -510,17 +521,14 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 velocityTracker?.addMovement(event)
 
                 if (moving) {
-                    close.x = (metrics.widthPixels / 2) + (((event.rawX + topChatHead!!.width / 2) / 10) - metrics.widthPixels / 2 / 10) - close.width / 2
-                    close.springY.endValue = (metrics.heightPixels - CLOSE_SIZE) + (((event.rawY + close.height / 2) / 10) - metrics.heightPixels / 10) - WindowManagerHelper.dpToPx(75f).toDouble()
+                    close.springX.endValue = (metrics.widthPixels / 2) + (((event.rawX + topChatHead!!.width / 2) / 7) - metrics.widthPixels / 2 / 7) - close.width.toDouble() / 2
+                    close.springY.endValue = (metrics.heightPixels - CLOSE_SIZE) + max(((event.rawY + close.height / 2) / 10) - metrics.heightPixels / 10, -WindowManagerHelper.dpToPx(30f).toFloat()) - WindowManagerHelper.dpToPx(60f).toDouble()
 
                     if (distance(close.x + close.width / 2, event.rawX, close.y + close.height / 2, event.rawY) < CLOSE_CAPTURE_DISTANCE * CLOSE_CAPTURE_DISTANCE) {
                         topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
                         topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
 
                         close.springScale.endValue = CLOSE_ADDITIONAL_SIZE.toDouble()
-
-                        topChatHead!!.springX.endValue = close.x.toDouble() + close.width / 2 - topChatHead!!.width / 2 + 2
-                        topChatHead!!.springY.endValue = close.y.toDouble() + close.height / 2 - topChatHead!!.height / 2 + 6
 
                         captured = true
                     } else if (captured) {
