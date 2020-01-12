@@ -120,6 +120,8 @@ class Content(context: Context): LinearLayout(context) {
     }
 
     fun hideContent() {
+        OverlayService.instance.chatHeads.handler.removeCallbacks(OverlayService.instance.chatHeads.showContentRunnable)
+
         scaleSpring.endValue = 0.0
 
         val anim = AlphaAnimation(1.0f, 0.0f)

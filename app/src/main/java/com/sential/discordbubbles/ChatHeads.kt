@@ -65,6 +65,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
     private var motionTracker = LinearLayout(context)
 
+    var showContentRunnable: Runnable? = null
+
     var topChatHead: ChatHead? = null
 
     var content = Content(context)
@@ -463,11 +465,13 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
                         updateActiveContent()
 
-                        android.os.Handler().postDelayed(
-                            {
-                                content.showContent()
-                            }, 200
-                        )
+                        handler.removeCallbacks(showContentRunnable)
+
+                        showContentRunnable = Runnable {
+                            content.showContent()
+                        }
+
+                        handler.postDelayed(showContentRunnable, 200)
                     }
                 } else if (!toggled) {
                     moving = false
