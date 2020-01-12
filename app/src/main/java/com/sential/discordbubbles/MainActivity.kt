@@ -29,8 +29,6 @@ class MainActivity : AppCompatActivity() {
 
         val service = Intent(this, OverlayService::class.java)
         startService(service)
-
-        var client = Client()
     }
 }
 

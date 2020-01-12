@@ -195,12 +195,18 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }
     }
 
-    fun add(server: String, channel: String? = null): ChatHead {
+    fun add(server: String): ChatHead {
+        var chatHead = chatHeads.find { it.server == server }
+
+        if (chatHead != null) {
+            return chatHead
+        }
+
         chatHeads.forEach {
             it.visibility = View.VISIBLE
         }
 
-        val chatHead = ChatHead(this, server, channel)
+        chatHead = ChatHead(this, server)
         chatHeads.add(chatHead)
 
         var lx = -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
@@ -251,12 +257,11 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     }
 
     fun changeContent() {
-        val chatHead = chatHeads.find { it.isActive }!!
+        val chatHead = chatHeads.find { it.isActive } ?: return
 
         content.messagesView.removeAllViews()
         content.lastId = 0
 
-        content.channel = chatHead.channel
         content.server = chatHead.server
 
         for (message in chatHead.messages) {

@@ -8,7 +8,7 @@ import android.view.*
 import com.facebook.rebound.*
 import kotlin.math.pow
 
-class ChatHead(var chatHeads: ChatHeads, var server: String = "", var channel: String? = null): View(chatHeads.context), View.OnTouchListener, SpringListener {
+class ChatHead(var chatHeads: ChatHeads, var server: String): View(chatHeads.context), View.OnTouchListener, SpringListener {
     var isTop: Boolean = false
     var isActive: Boolean = false
 
@@ -39,17 +39,9 @@ class ChatHead(var chatHeads: ChatHeads, var server: String = "", var channel: S
 
     private var moving = false
 
-    override fun onSpringEndStateChange(spring: Spring?) {
-
-    }
-
-    override fun onSpringAtRest(spring: Spring?) {
-
-    }
-
-    override fun onSpringActivate(spring: Spring?) {
-
-    }
+    override fun onSpringEndStateChange(spring: Spring?) = Unit
+    override fun onSpringAtRest(spring: Spring?) = Unit
+    override fun onSpringActivate(spring: Spring?) = Unit
 
     init {
         params.gravity = Gravity.TOP or Gravity.START

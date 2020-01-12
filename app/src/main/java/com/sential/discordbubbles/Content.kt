@@ -43,7 +43,7 @@ class Content(context: Context): LinearLayout(context) {
             field = value
         }
 
-    var server: String? = null
+    var server: String = ""
         set(value) {
             when {
                 value == null -> {

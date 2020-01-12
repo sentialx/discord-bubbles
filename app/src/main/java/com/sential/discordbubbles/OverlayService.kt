@@ -21,6 +21,8 @@ class OverlayService : Service() {
 
         instance = this
 
+        var client = Client()
+
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
         chatHeads = ChatHeads(this)
@@ -29,13 +31,10 @@ class OverlayService : Service() {
         val intentFilter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
         registerReceiver(innerReceiver, intentFilter)
 
-        chatHeads.add("test", "test")
+        chatHeads.add("test")
         val msg = Message("test", "test", "test")
         chatHeads.topChatHead!!.messages.add(msg)
-
-        if (chatHeads.topChatHead!!.isActive) {
-            chatHeads.content.addMessage(msg)
-        }
+        chatHeads.changeContent()
     }
 
     override fun onDestroy() {
