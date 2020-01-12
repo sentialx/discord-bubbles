@@ -195,7 +195,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }
     }
 
-    fun add(server: String): ChatHead {
+    fun add(type: BubbleType, server: String, channel: String = ""): ChatHead {
         var chatHead = chatHeads.find { it.server == server }
 
         if (chatHead != null) {
@@ -206,7 +206,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             it.visibility = View.VISIBLE
         }
 
-        chatHead = ChatHead(this, server)
+        chatHead = ChatHead(this, type, server, channel)
         chatHeads.add(chatHead)
 
         var lx = -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
@@ -262,7 +262,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         content.messagesView.removeAllViews()
         content.lastId = 0
 
-        content.server = chatHead.server
+        content.setInfo(chatHead)
 
         for (message in chatHead.messages) {
             content.addMessage(message)

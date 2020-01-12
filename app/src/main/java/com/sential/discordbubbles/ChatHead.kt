@@ -8,7 +8,7 @@ import android.view.*
 import com.facebook.rebound.*
 import kotlin.math.pow
 
-class ChatHead(var chatHeads: ChatHeads, var server: String): View(chatHeads.context), View.OnTouchListener, SpringListener {
+class ChatHead(var chatHeads: ChatHeads, var type: BubbleType, var server: String, var channel: String = ""): View(chatHeads.context), View.OnTouchListener, SpringListener {
     var isTop: Boolean = false
     var isActive: Boolean = false
 
@@ -20,14 +20,14 @@ class ChatHead(var chatHeads: ChatHeads, var server: String): View(chatHeads.con
         PixelFormat.TRANSLUCENT
     )
 
-    var springSystem = SpringSystem.create()
+    var springSystem: SpringSystem = SpringSystem.create()
 
-    var springX = springSystem.createSpring()
-    var springY = springSystem.createSpring()
+    var springX: Spring = springSystem.createSpring()
+    var springY: Spring = springSystem.createSpring()
 
-    val paint = Paint()
+    private val paint = Paint()
 
-    val bitmap = ImageHelper.addShadow(ImageHelper.getCircularBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.test)))
+    private val bitmap = ImageHelper.addShadow(ImageHelper.getCircularBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.test)))
 
     val messages = mutableListOf<Message>()
 

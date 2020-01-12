@@ -25,9 +25,20 @@ class Client : ListenerAdapter() {
         val msg = event.message
 
         Handler(Looper.getMainLooper()).post(Runnable {
-            val bubbleName = if (event.channelType === ChannelType.TEXT) event.guild.name else event.privateChannel.name
+            var bubbleType: BubbleType = BubbleType.GUILD
+            var bubbleServer: String = ""
+            var bubbleChannel: String = ""
 
-            val chatHead = OverlayService.instance.chatHeads.add(bubbleName)
+            if (event.channelType === ChannelType.TEXT) {
+                bubbleServer = event.guild.name
+                bubbleChannel = event.channel.name
+            } else if (event.channelType === ChannelType.PRIVATE) {
+                bubbleType = BubbleType.DM
+                bubbleServer = event.privateChannel.name
+                bubbleChannel = ""
+            }
+
+            val chatHead = OverlayService.instance.chatHeads.add(bubbleType, bubbleServer, bubbleChannel)
             chatHead.messages.add(Message(msg.author.id, msg.contentRaw, msg.channel.id))
             OverlayService.instance.chatHeads.changeContent()
         })

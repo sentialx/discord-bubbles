@@ -30,11 +30,6 @@ class OverlayService : Service() {
         val innerReceiver = InnerReceiver()
         val intentFilter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
         registerReceiver(innerReceiver, intentFilter)
-
-        chatHeads.add("test")
-        val msg = Message("test", "test", "test")
-        chatHeads.topChatHead!!.messages.add(msg)
-        chatHeads.changeContent()
     }
 
     override fun onDestroy() {

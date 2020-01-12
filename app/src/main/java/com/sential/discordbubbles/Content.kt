@@ -28,42 +28,18 @@ class Content(context: Context): LinearLayout(context) {
 
     var lastId = 0
 
-    var channel: String? = null
-        set(value) {
-            if (value == null) {
-                hashTagView.visibility = View.GONE
-                serverView.visibility = View.GONE
-                channelView.text = server
-            } else {
-                serverView.visibility = View.VISIBLE
-                hashTagView.visibility = View.VISIBLE
-                channelView.text = value
-                serverView.text = server
-            }
-            field = value
+    fun setInfo(chatHead: ChatHead) {
+        if (chatHead.type === BubbleType.DM) {
+            serverView.visibility = GONE
+            hashTagView.visibility = GONE
+            channelView.text = chatHead.server
+        } else if (chatHead.type === BubbleType.GUILD) {
+            channelView.text = chatHead.channel
+            serverView.text = chatHead.server
+            serverView.visibility = VISIBLE
+            hashTagView.visibility = VISIBLE
         }
-
-    var server: String = ""
-        set(value) {
-            when {
-                value == null -> {
-                    if (channel == null) {
-                        channelView.visibility = View.GONE
-                    }
-                    serverView.visibility = View.GONE
-                }
-                channel == null -> {
-                    serverView.visibility = View.GONE
-                    channelView.text = value
-                }
-                else -> {
-                    serverView.visibility = View.VISIBLE
-                    serverView.text = value
-                }
-            }
-
-            field = value
-        }
+    }
 
     init {
         inflate(context, R.layout.chat_head_content, this)
