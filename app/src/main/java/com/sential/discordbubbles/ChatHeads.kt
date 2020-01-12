@@ -240,7 +240,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
         } else {
             setTop(topChatHead!!)
-            rearrangeOpen(false)
+            rearrangeExpanded(false)
         }
 
         return chatHead
@@ -283,10 +283,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }, 300)
     }
 
-    fun rearrangeOpen(animation: Boolean = true) {
+    fun rearrangeExpanded(animation: Boolean = true) {
         val metrics = WindowManagerHelper.getScreenSize()
-
-            println("")
 
         chatHeads.forEachIndexed { index, it ->
             it.springX.springConfig = SpringConfigs.NOT_DRAGGING
@@ -306,7 +304,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }
     }
 
-    fun onSpringUpdate(chatHead: ChatHead, spring: Spring, totalVelocity: Int) {
+    fun onChatHeadSpringUpdate(chatHead: ChatHead, spring: Spring, totalVelocity: Int) {
         val metrics = WindowManagerHelper.getScreenSize()
 
         if (topChatHead != null && chatHead == topChatHead!!) {
@@ -454,7 +452,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                     if (!toggled) {
                         toggled = true
 
-                        rearrangeOpen()
+                        rearrangeExpanded()
 
                         motionTrackerParams.flags = motionTrackerParams.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                         OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)

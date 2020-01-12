@@ -80,7 +80,7 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
         if (spring !== this.springX && spring !== this.springY) return
         val totalVelocity = Math.hypot(springX.velocity, springY.velocity).toInt()
 
-        chatHeads.onSpringUpdate(this, spring, totalVelocity)
+        chatHeads.onChatHeadSpringUpdate(this, spring, totalVelocity)
     }
 
     override fun onDraw(canvas: Canvas?) {
