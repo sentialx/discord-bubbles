@@ -11,7 +11,6 @@ import android.support.v4.app.NotificationManagerCompat
 
 
 class MainActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -28,15 +27,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (!NotificationManagerCompat.getEnabledListenerPackages(this).contains(packageName)) {
-            startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
-        }
-
         val service = Intent(this, OverlayService::class.java)
         startService(service)
-
-        val service2 = Intent(this, NotifyService::class.java)
-        startService(service2)
     }
 }
 
