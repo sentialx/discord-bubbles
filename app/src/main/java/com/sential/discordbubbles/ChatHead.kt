@@ -8,7 +8,7 @@ import android.view.*
 import com.facebook.rebound.*
 import kotlin.math.pow
 
-class ChatHead(var chatHeads: ChatHeads, var type: BubbleType, var server: String, var channel: String = ""): View(chatHeads.context), View.OnTouchListener, SpringListener {
+class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHeads.context), View.OnTouchListener, SpringListener {
     var isTop: Boolean = false
     var isActive: Boolean = false
 
@@ -26,8 +26,6 @@ class ChatHead(var chatHeads: ChatHeads, var type: BubbleType, var server: Strin
     var springY: Spring = springSystem.createSpring()
 
     private val paint = Paint()
-
-    private val bitmap = ImageHelper.addShadow(ImageHelper.getCircularBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.test)))
 
     val messages = mutableListOf<Message>()
 
@@ -71,6 +69,10 @@ class ChatHead(var chatHeads: ChatHeads, var type: BubbleType, var server: Strin
         chatHeads.addView(this, params)
 
         this.setOnTouchListener(this)
+
+        guildInfo.onAvatarChange = {
+            invalidate()
+        }
     }
 
     override fun onSpringUpdate(spring: Spring) {
@@ -81,7 +83,9 @@ class ChatHead(var chatHeads: ChatHeads, var type: BubbleType, var server: Strin
     }
 
     override fun onDraw(canvas: Canvas?) {
-        canvas?.drawBitmap(bitmap, 0f, 0f, paint)
+        if (guildInfo.chatHeadBitmap != null) {
+            canvas?.drawBitmap(guildInfo.chatHeadBitmap!!, 0f, 0f, paint)
+        }
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {

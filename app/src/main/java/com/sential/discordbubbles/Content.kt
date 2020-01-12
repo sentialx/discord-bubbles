@@ -30,13 +30,13 @@ class Content(context: Context): LinearLayout(context) {
     var lastId = 0
 
     fun setInfo(chatHead: ChatHead) {
-        if (chatHead.type === BubbleType.DM) {
+        if (chatHead.guildInfo.isPrivate) {
             serverView.visibility = GONE
             hashTagView.visibility = GONE
-            channelView.text = chatHead.server
-        } else if (chatHead.type === BubbleType.GUILD) {
-            channelView.text = chatHead.channel
-            serverView.text = chatHead.server
+            channelView.text = chatHead.guildInfo.name
+        } else {
+            channelView.text = chatHead.guildInfo.channel?.name
+            serverView.text = chatHead.guildInfo.name
             serverView.visibility = VISIBLE
             hashTagView.visibility = VISIBLE
         }

@@ -195,8 +195,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }
     }
 
-    fun add(type: BubbleType, server: String, channel: String = ""): ChatHead {
-        var chatHead = chatHeads.find { it.server == server }
+    fun add(guildInfo: GuildInfo): ChatHead {
+        var chatHead = chatHeads.find { it.guildInfo.id == guildInfo.id }
 
         if (chatHead != null) {
             return chatHead
@@ -206,7 +206,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             it.visibility = View.VISIBLE
         }
 
-        chatHead = ChatHead(this, type, server, channel)
+        chatHead = ChatHead(this, guildInfo)
         chatHeads.add(chatHead)
 
         var lx = -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
