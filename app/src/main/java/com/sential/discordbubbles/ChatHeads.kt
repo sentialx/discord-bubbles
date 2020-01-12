@@ -290,9 +290,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             it.springX.springConfig = SpringConfigs.NOT_DRAGGING
             it.springY.springConfig = SpringConfigs.NOT_DRAGGING
 
-            val x = metrics.widthPixels - topChatHead!!.width.toDouble() - index * (CHAT_HEAD_SIZE + CHAT_HEAD_EXPANDED_PADDING).toDouble()
+            val x = metrics.widthPixels - topChatHead!!.width.toDouble() - index * (it.params.width + CHAT_HEAD_EXPANDED_PADDING).toDouble()
             val y = CHAT_HEAD_EXPANDED_MARGIN_TOP.toDouble()
-
 
             if (animation) {
                 it.springY.endValue = y
