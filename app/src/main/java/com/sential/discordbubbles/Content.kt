@@ -1,9 +1,7 @@
 package com.sential.discordbubbles
 
 import android.content.Context
-import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.LinearLayout
@@ -14,7 +12,6 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringSystem
 import kotlinx.android.synthetic.main.chat_head_content.view.*
-import kotlinx.android.synthetic.main.chat_message.view.*
 
 class Content(context: Context): LinearLayout(context) {
     private val springSystem = SpringSystem.create()
@@ -26,8 +23,6 @@ class Content(context: Context): LinearLayout(context) {
     private var scrollView: ScrollView
 
     var messagesView: RelativeLayout
-
-    var lastId = 0
 
     fun setInfo(chatHead: ChatHead) {
         if (chatHead.guildInfo.isPrivate) {
@@ -42,7 +37,6 @@ class Content(context: Context): LinearLayout(context) {
         }
 
         messagesView.removeAllViews()
-        lastId = 0
 
         for (message in chatHead.messages) {
             addMessage(message)
@@ -70,7 +64,7 @@ class Content(context: Context): LinearLayout(context) {
     }
 
     fun addMessage(message: Message) {
-        val view = inflate(context, R.layout.chat_message, null)
+        val view = inflate(context, R.layout.message_group, null)
         val root: LinearLayout = view.findViewById(R.id.root)
         root.id = View.generateViewId()
 
@@ -96,8 +90,6 @@ class Content(context: Context): LinearLayout(context) {
         messages.addView(view)
 
         scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
-
-        lastId++
     }
 
     fun hideContent() {

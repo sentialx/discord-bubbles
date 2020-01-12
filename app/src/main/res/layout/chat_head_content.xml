@@ -58,31 +58,32 @@
                         android:layout_width="wrap_content" />
             </LinearLayout>
         </LinearLayout>
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#fff" android:alpha="0.12" />
-        <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:layout_width="fill_parent"
-                    android:layout_weight="2"
-                    android:id="@+id/scrollView"
-                    android:layout_height="0dp">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#fff"
+            android:alpha="0.12" />
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_weight="2"
+            android:id="@+id/scrollView"
+            android:layout_height="0dp">
         <RelativeLayout
-                android:layout_width="match_parent"
-                android:id="@+id/messages"
-                android:orientation="vertical"
-                android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                />
+            android:layout_width="match_parent"
+            android:id="@+id/messages"
+            android:orientation="vertical"
+            android:layout_height="wrap_content" />
         </ScrollView>
         <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Type in #general"
-                android:textColor="#fff"
-                android:padding="8dp"
-                android:textSize="14dp"
-                android:textColorHint="#8Cffffff"
-                android:id="@+id/editText"
-                android:layout_margin="8dp"
-                android:background="@drawable/input_rounded"/>
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Type in #general"
+            android:textColor="#fff"
+            android:padding="8dp"
+            android:textSize="14sp"
+            android:textColorHint="#8Cffffff"
+            android:id="@+id/editText"
+            android:layout_margin="8dp"
+            android:background="@drawable/input_rounded" />
     </LinearLayout>
 </LinearLayout>
