@@ -27,6 +27,7 @@
                 android:layout_width="match_parent">
             <TextView
                     android:text="user"
+                    android:textStyle="bold"
                     android:id="@+id/group_author"
                     android:textColor="?android:textColorPrimaryInverse"
                     android:layout_width="wrap_content"
@@ -43,6 +44,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:layout_marginTop="2dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:id="@+id/group_messages"

@@ -4,10 +4,7 @@ import android.content.Context
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
-import android.widget.ScrollView
-import android.widget.TextView
+import android.widget.*
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringSystem
@@ -69,7 +66,7 @@ class Content(context: Context): LinearLayout(context) {
     fun addMessage(message: Message) {
         val view: View
 
-        if (lastAuthorId != null && lastAuthorId === message.author.id && lastMessageGroup != null) {
+        if (lastAuthorId != null && lastAuthorId == message.author.id && lastMessageGroup != null) {
             view = lastMessageGroup!!
         } else {
             view = inflate(context, R.layout.message_group, null)
@@ -99,6 +96,7 @@ class Content(context: Context): LinearLayout(context) {
         messagesView.addView(messageView)
 
         lastMessageGroup = view
+        lastAuthorId = message.author.id
 
         scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
     }
