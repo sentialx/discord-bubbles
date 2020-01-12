@@ -11,6 +11,7 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringSystem
 import kotlinx.android.synthetic.main.chat_head_content.view.*
+import java.time.OffsetDateTime
 
 class Content(context: Context): LinearLayout(context) {
     private val springSystem = SpringSystem.create()

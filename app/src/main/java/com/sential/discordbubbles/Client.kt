@@ -9,7 +9,6 @@ import android.os.Looper
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.SelfUser
 
-
 class Client : ListenerAdapter() {
     companion object {
         lateinit var instance: Client
@@ -49,7 +48,7 @@ class Client : ListenerAdapter() {
         if (guildInfo != null) {
             Handler(Looper.getMainLooper()).post {
                 val chatHead = OverlayService.instance.chatHeads.add(guildInfo)
-                val message = Message(msg.author, msg.contentRaw, msg.channel.id)
+                val message = Message(msg.author, msg.contentRaw, msg.timeCreated, msg.channel.id)
                 chatHead.messages.add(message)
 
                 if (chatHead.isActive) {

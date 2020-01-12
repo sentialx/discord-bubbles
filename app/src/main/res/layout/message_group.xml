@@ -9,7 +9,6 @@
     android:background="@color/background"
     android:id="@+id/group_root">
     <ImageView
-            android:src="@drawable/ic_launcher_background"
             android:layout_width="42dp"
             android:layout_height="42dp"
             android:id="@+id/group_avatar"
@@ -28,14 +27,16 @@
             <TextView
                     android:text="user"
                     android:textStyle="bold"
+                    android:textSize="16dp"
                     android:id="@+id/group_author"
                     android:textColor="?android:textColorPrimaryInverse"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
             </TextView>
             <TextView
-                    android:text="date"
+                    android:text=""
                     android:layout_marginStart="8dp"
+                    android:textSize="13dp"
                     android:id="@+id/group_date"
                     android:textColor="?android:textColorSecondaryInverse"
                     android:layout_width="wrap_content"

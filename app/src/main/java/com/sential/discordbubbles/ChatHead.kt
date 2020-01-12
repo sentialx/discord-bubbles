@@ -1,5 +1,6 @@
 package com.sential.discordbubbles
 
+import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
