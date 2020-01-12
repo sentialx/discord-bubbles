@@ -49,8 +49,12 @@ class Client : ListenerAdapter() {
         if (guildInfo != null) {
             Handler(Looper.getMainLooper()).post {
                 val chatHead = OverlayService.instance.chatHeads.add(guildInfo)
-                chatHead.messages.add(Message(msg.author, msg.contentRaw, msg.channel.id))
-                OverlayService.instance.chatHeads.updateActiveContent()
+                val message = Message(msg.author, msg.contentRaw, msg.channel.id)
+                chatHead.messages.add(message)
+
+                if (chatHead.isActive) {
+                    OverlayService.instance.chatHeads.content.addMessage(message)
+                }
             }
         }
 

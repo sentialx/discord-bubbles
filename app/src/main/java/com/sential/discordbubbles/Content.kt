@@ -26,25 +26,6 @@ class Content(context: Context): LinearLayout(context) {
 
     var messagesView: RelativeLayout
 
-    fun setInfo(chatHead: ChatHead) {
-        if (chatHead.guildInfo.isPrivate) {
-            serverView.visibility = GONE
-            hashTagView.visibility = GONE
-            channelView.text = chatHead.guildInfo.name
-        } else {
-            channelView.text = chatHead.guildInfo.channel?.name
-            serverView.text = chatHead.guildInfo.name
-            serverView.visibility = VISIBLE
-            hashTagView.visibility = VISIBLE
-        }
-
-        messagesView.removeAllViews()
-
-        for (message in chatHead.messages) {
-            addMessage(message)
-        }
-    }
-
     init {
         inflate(context, R.layout.chat_head_content, this)
 
@@ -63,6 +44,28 @@ class Content(context: Context): LinearLayout(context) {
         scaleSpring.springConfig = SpringConfigs.CONTENT_SCALE
 
         scaleSpring.currentValue = 0.0
+    }
+
+    fun setInfo(chatHead: ChatHead) {
+        if (chatHead.guildInfo.isPrivate) {
+            serverView.visibility = GONE
+            hashTagView.visibility = GONE
+            channelView.text = chatHead.guildInfo.name
+        } else {
+            channelView.text = chatHead.guildInfo.channel?.name
+            serverView.text = chatHead.guildInfo.name
+            serverView.visibility = VISIBLE
+            hashTagView.visibility = VISIBLE
+        }
+
+        lastAuthorId = null
+        lastMessageGroup = null
+
+        messagesView.removeAllViews()
+
+        for (message in chatHead.messages) {
+            addMessage(message)
+        }
     }
 
     fun addMessage(message: Message) {
