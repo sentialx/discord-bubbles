@@ -4,9 +4,23 @@ import android.graphics.*
 import android.graphics.Bitmap
 import android.graphics.PorterDuffXfermode
 import android.graphics.BlurMaskFilter
+import android.opengl.ETC1.getHeight
+import android.opengl.ETC1.getWidth
+
+
 
 class ImageHelper {
     companion object {
+        fun addBitmapBackground(bitmap: Bitmap): Bitmap {
+            val newBitmap =
+                Bitmap.createBitmap(bitmap.width, bitmap.height, bitmap.config)
+            val canvas = Canvas(newBitmap)
+            canvas.drawColor(Color.BLACK)
+            val rect = Rect(0, 0, bitmap.width, bitmap.height)
+            canvas.drawBitmap(bitmap, rect, rect, null)
+            return newBitmap
+        }
+
         fun getCircularBitmap(bitmap: Bitmap): Bitmap {
             val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(output)
@@ -17,7 +31,8 @@ class ImageHelper {
             paint.isAntiAlias = true
             canvas.drawARGB(0, 0, 0, 0)
 
-            paint.color = -0xbdbdbe
+            paint.color = Color.WHITE
+            paint.style = Paint.Style.FILL
             canvas.drawCircle(output.width.toFloat() / 2, output.height.toFloat() / 2, output.width.toFloat() / 2, paint)
 
             paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)

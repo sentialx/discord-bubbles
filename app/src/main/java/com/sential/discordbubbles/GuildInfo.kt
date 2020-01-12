@@ -42,8 +42,7 @@ class GuildInfo(val id: String, val name: String, avatarUrl: String, val channel
     set(value) {
         field = value
         if (value != null) {
-
-            chatHeadBitmap = ImageHelper.addShadow(ImageHelper.getCircularBitmap(value))
+            chatHeadBitmap = ImageHelper.addShadow(ImageHelper.getCircularBitmap(ImageHelper.addBitmapBackground(value)))
             onAvatarChange?.let { it() }
         }
     }
