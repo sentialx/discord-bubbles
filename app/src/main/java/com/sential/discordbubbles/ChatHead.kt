@@ -108,7 +108,7 @@ class ChatHead(var chatHeads: ChatHeads, var type: BubbleType, var server: Strin
                         selectedChatHead.isActive = false
                         currentChatHead.isActive = true
 
-                        chatHeads.changeContent()
+                        chatHeads.updateActiveContent()
                     }
                 } else {
                     springX.endValue = metrics.widthPixels - width - (chatHeads.chatHeads.size - 1 - chatHeads.chatHeads.indexOf(this)) * (width + ChatHeads.CHAT_HEAD_EXPANDED_PADDING).toDouble()

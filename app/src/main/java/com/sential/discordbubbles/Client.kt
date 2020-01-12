@@ -12,13 +12,24 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import javax.security.auth.login.LoginException
 import android.os.Looper
 import net.dv8tion.jda.api.entities.ChannelType
+import net.dv8tion.jda.api.entities.SelfUser
 
 
 class Client : ListenerAdapter() {
+    companion object {
+        lateinit var instance: Client
+    }
+
+    var user: SelfUser
+
     init {
-        JDABuilder(AccountType.CLIENT).setToken(DiscordTestToken.DISCORD_TOKEN)
+        val jda = JDABuilder(AccountType.CLIENT).setToken(DiscordTestToken.DISCORD_TOKEN)
             .addEventListeners(this)
             .build()
+
+        instance = this
+
+        user = jda.selfUser
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
@@ -39,8 +50,8 @@ class Client : ListenerAdapter() {
             }
 
             val chatHead = OverlayService.instance.chatHeads.add(bubbleType, bubbleServer, bubbleChannel)
-            chatHead.messages.add(Message(msg.author.id, msg.contentRaw, msg.channel.id))
-            OverlayService.instance.chatHeads.changeContent()
+            chatHead.messages.add(Message(msg.author, msg.contentRaw, msg.channel.id))
+            OverlayService.instance.chatHeads.updateActiveContent()
         })
 
     }

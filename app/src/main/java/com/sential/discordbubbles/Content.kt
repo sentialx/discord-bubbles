@@ -1,6 +1,7 @@
 package com.sential.discordbubbles
 
 import android.content.Context
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
@@ -39,6 +40,13 @@ class Content(context: Context): LinearLayout(context) {
             serverView.visibility = VISIBLE
             hashTagView.visibility = VISIBLE
         }
+
+        messagesView.removeAllViews()
+        lastId = 0
+
+        for (message in chatHead.messages) {
+            addMessage(message)
+        }
     }
 
     init {
@@ -67,6 +75,10 @@ class Content(context: Context): LinearLayout(context) {
         root.id = View.generateViewId()
 
         val params = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
+
+        if (message.author.id == Client.instance.user.id) {
+            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+        }
 
         if (messagesView.childCount > 0) {
             val prev = messagesView.getChildAt(messagesView.childCount - 1)

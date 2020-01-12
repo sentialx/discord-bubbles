@@ -256,17 +256,9 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         OverlayService.instance.windowManager.updateViewLayout(this, params)
     }
 
-    fun changeContent() {
+    fun updateActiveContent() {
         val chatHead = chatHeads.find { it.isActive } ?: return
-
-        content.messagesView.removeAllViews()
-        content.lastId = 0
-
         content.setInfo(chatHead)
-
-        for (message in chatHead.messages) {
-            content.addMessage(message)
-        }
     }
 
     fun hideChatHeads() {
@@ -446,7 +438,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
                         topChatHead!!.isActive = true
 
-                        changeContent()
+                        updateActiveContent()
 
                         android.os.Handler().postDelayed(
                             {
