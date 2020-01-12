@@ -1,6 +1,8 @@
 package com.sential.discordbubbles
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
@@ -72,6 +74,18 @@ class Content(context: Context): LinearLayout(context) {
             view = inflate(context, R.layout.message_group, null)
             val root: LinearLayout = view.findViewById(R.id.group_root)
             root.id = View.generateViewId()
+
+            if (message.author.avatarUrl != null) {
+                Thread {
+                    val bitmap = fetchBitmap(message.author.avatarUrl!!)?.makeCircular()
+
+                    Handler(Looper.getMainLooper()).post {
+                        view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(bitmap)
+                    }
+                }.start()
+            }
+
+            view.findViewById<TextView>(R.id.group_author).text = message.author.name
 
             val params = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
 

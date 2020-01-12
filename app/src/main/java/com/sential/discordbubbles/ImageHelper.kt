@@ -6,6 +6,8 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.BlurMaskFilter
 import android.opengl.ETC1.getHeight
 import android.opengl.ETC1.getWidth
+import java.io.IOException
+import java.net.HttpURLConnection
 
 fun Bitmap.addBackground(): Bitmap {
     val newBitmap = Bitmap.createBitmap(width, height, config)
@@ -58,4 +60,19 @@ fun Bitmap.addShadow(): Bitmap {
 
 fun Bitmap.scaleToSize(size: Int): Bitmap {
     return Bitmap.createScaledBitmap(this, size, size, true);
+}
+
+fun fetchBitmap(urlStr: String): Bitmap? {
+    try {
+        val url = java.net.URL(urlStr)
+        val connection = url
+            .openConnection() as HttpURLConnection
+        connection.doInput = true
+        connection.connect()
+        val input = connection.inputStream
+        return BitmapFactory.decodeStream(input)
+    } catch (e: IOException) {
+        e.printStackTrace()
+        return null
+    }
 }

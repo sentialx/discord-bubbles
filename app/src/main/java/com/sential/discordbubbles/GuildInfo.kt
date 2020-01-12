@@ -12,18 +12,7 @@ class GuildInfo(val id: String, val name: String, avatarUrl: String, val channel
     var avatarUrl: String = avatarUrl
         set(value) {
             field = value
-            println(value)
-            try {
-                val url = java.net.URL(value)
-                val connection = url
-                    .openConnection() as HttpURLConnection
-                connection.doInput = true
-                connection.connect()
-                val input = connection.inputStream
-                this.avatarBitmap = BitmapFactory.decodeStream(input)
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
+            this.avatarBitmap = fetchBitmap(value)
         }
 
     init {
