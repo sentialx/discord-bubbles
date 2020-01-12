@@ -22,6 +22,9 @@ class Content(context: Context): LinearLayout(context) {
     private var hashTagView: TextView
     private var scrollView: ScrollView
 
+    private var lastAuthorId: String? = null
+    private var lastMessageGroup: View? = null
+
     var messagesView: RelativeLayout
 
     fun setInfo(chatHead: ChatHead) {
@@ -64,30 +67,38 @@ class Content(context: Context): LinearLayout(context) {
     }
 
     fun addMessage(message: Message) {
-        val view = inflate(context, R.layout.message_group, null)
-        val root: LinearLayout = view.findViewById(R.id.root)
-        root.id = View.generateViewId()
+        val view: View
 
-        val params = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
-
-        if (message.author.id == Client.instance.user.id) {
-            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
-        }
-
-        if (messagesView.childCount > 0) {
-            val prev = messagesView.getChildAt(messagesView.childCount - 1)
-            params.addRule(RelativeLayout.BELOW, prev.id)
-            params.topMargin = WindowManagerHelper.dpToPx(4f)
-            root.layoutParams = params
+        if (lastAuthorId != null && lastAuthorId === message.author.id && lastMessageGroup != null) {
+            view = lastMessageGroup!!
         } else {
-            params.topMargin = WindowManagerHelper.dpToPx(16f)
-            root.layoutParams = params
+            view = inflate(context, R.layout.message_group, null)
+            val root: LinearLayout = view.findViewById(R.id.group_root)
+            root.id = View.generateViewId()
+
+            val params = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
+
+            if (messagesView.childCount > 0) {
+                val prev = messagesView.getChildAt(messagesView.childCount - 1)
+                params.addRule(RelativeLayout.BELOW, prev.id)
+                params.topMargin = WindowManagerHelper.dpToPx(4f)
+                root.layoutParams = params
+            } else {
+                params.topMargin = WindowManagerHelper.dpToPx(16f)
+                root.layoutParams = params
+            }
+
+            messages.addView(view)
         }
 
-        val body: TextView = view.findViewById(R.id.body)
-        body.text = message.body
+        val messagesView: LinearLayout = view.findViewById(R.id.group_messages)
+        val messageView = inflate(context, R.layout.message, null)
 
-        messages.addView(view)
+        messageView.findViewById<TextView>(R.id.msg_body).text = message.body
+
+        messagesView.addView(messageView)
+
+        lastMessageGroup = view
 
         scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
     }
