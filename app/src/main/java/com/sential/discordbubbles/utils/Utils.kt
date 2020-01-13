@@ -7,6 +7,7 @@ import android.os.Looper
 import android.util.DisplayMetrics
 import android.view.WindowManager
 import android.util.TypedValue
+import net.dv8tion.jda.api.entities.User
 
 fun getOverlayFlag(): Int {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -31,5 +32,13 @@ fun spToPx(sp: Float): Float {
 fun runOnMainLoop(fn: () -> Unit) {
     Handler(Looper.getMainLooper()).post {
         fn()
+    }
+}
+
+fun getAvatarUrl(user: User): String {
+    return if (user.avatarUrl != null) {
+        user.avatarUrl!!
+    } else {
+        user.defaultAvatarUrl
     }
 }

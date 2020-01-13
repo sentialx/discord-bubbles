@@ -1,19 +1,14 @@
 package com.sential.discordbubbles.client
 
-import android.os.Handler
 import net.dv8tion.jda.api.AccountType
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import android.os.Looper
 import com.sential.discordbubbles.chatheads.*
-import com.sential.discordbubbles.utils.runOnMainLoop
+import com.sential.discordbubbles.utils.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.SelfUser
-import net.dv8tion.jda.api.entities.MessageChannel
-
-
 
 class Client : ListenerAdapter() {
     companion object {
@@ -42,17 +37,16 @@ class Client : ListenerAdapter() {
 
         if (event.channelType === ChannelType.TEXT) {
             if (event.guild.iconUrl != null) {
+                // TODO: guild icon with first letter
                 guildInfo = GuildInfo(event.guild.id, event.guild.name, event.guild.iconUrl!!, channel)
             }
         } else if (event.channelType === ChannelType.PRIVATE) {
-            if (event.privateChannel.user.avatarUrl != null) {
-                guildInfo = GuildInfo(
-                    event.privateChannel.id,
-                    event.privateChannel.name,
-                    event.privateChannel.user.avatarUrl!!,
-                    channel
-                )
-            }
+            guildInfo = GuildInfo(
+                event.privateChannel.id,
+                event.privateChannel.name,
+                getAvatarUrl(event.privateChannel.user),
+                channel
+            )
         }
 
         if (guildInfo != null) {

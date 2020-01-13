@@ -101,15 +101,13 @@ class Content(context: Context): LinearLayout(context) {
             val root: LinearLayout = view.findViewById(R.id.group_root)
             root.id = View.generateViewId()
 
-            if (message.author.avatarUrl != null) {
-                Thread {
-                    val bitmap = fetchBitmap(message.author.avatarUrl!!)?.makeCircular()
+            Thread {
+                val bitmap = fetchBitmap(getAvatarUrl(message.author))?.makeCircular()
 
-                    Handler(Looper.getMainLooper()).post {
-                        view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(bitmap)
-                    }
-                }.start()
-            }
+                Handler(Looper.getMainLooper()).post {
+                    view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(bitmap)
+                }
+            }.start()
 
             view.findViewById<TextView>(R.id.group_author).text = message.author.name
 
