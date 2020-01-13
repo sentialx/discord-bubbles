@@ -271,7 +271,11 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         motionTrackerParams.flags = motionTrackerParams.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
         OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
 
-        params.flags = ((params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()) and WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv() or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        params.flags = (params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) and
+                WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv() and
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv() or
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+
         OverlayService.instance.windowManager.updateViewLayout(this, params)
     }
 
@@ -280,16 +284,33 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         content.setInfo(chatHead)
     }
 
-    fun hideChatHeads() {
+    private fun onClose() {
         close.hide()
 
-        postDelayed({
+        if (captured) {
+            postDelayed({
+                removeAll()
+            }, 300)
+        }
+    }
+
+    fun removeAll() {
+        chatHeads.forEach {
+            remove(it)
+        }
+    }
+
+    fun remove(chatHead: ChatHead?) {
+        if (chatHead == null || chatHeads.size == 0) return
+
+        if (chatHeads.size == 1) {
             setTop(null)
-            chatHeads.forEach {
-                this.removeView(it)
-                chatHeads.remove(it)
-            }
-        }, 300)
+        } else if (topChatHead == chatHead) {
+            setTop(chatHeads[1])
+        }
+
+        this.removeView(chatHead)
+        chatHeads.remove(chatHead)
     }
 
     fun rearrangeExpanded(animation: Boolean = true) {
@@ -337,16 +358,14 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
         content.pivotY = chatHead.height.toFloat()
 
-        if (!moving && distance(close.x, topChatHead!!.springX.currentValue.toFloat(), close.y, topChatHead!!.springY.currentValue.toFloat()) < CLOSE_CAPTURE_DISTANCE * CLOSE_CAPTURE_DISTANCE && !captured && close.visibility == View.VISIBLE) {
+        if (topChatHead != null && !moving && distance(close.x, topChatHead!!.springX.currentValue.toFloat(), close.y, topChatHead!!.springY.currentValue.toFloat()) < CLOSE_CAPTURE_DISTANCE * CLOSE_CAPTURE_DISTANCE && !captured && close.visibility == View.VISIBLE) {
             topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
             topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
 
             topChatHead!!.springX.endValue = close.springX.endValue
             topChatHead!!.springY.endValue = close.springY.endValue
 
-            postDelayed({
-                hideChatHeads()
-            }, 300)
+            onClose()
 
             captured = true
         }
@@ -392,7 +411,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 }
             }
 
-            if (Math.abs(totalVelocity) % 10 == 0 && !moving) {
+            if (Math.abs(totalVelocity) % 10 == 0 && !moving && topChatHead != null) {
                 motionTrackerParams.y = topChatHead!!.springY.currentValue.toInt()
 
                 OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
@@ -441,13 +460,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             MotionEvent.ACTION_UP -> {
                 if (moving) wasMoving = true
 
-                postDelayed({
-                    close.hide()
-
-                    if (captured) {
-                        hideChatHeads()
-                    }
-                }, 200)
+                onClose()
 
                 if (captured) return true
 
