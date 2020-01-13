@@ -2,6 +2,8 @@ package com.sential.discordbubbles.utils
 
 import android.content.res.Resources
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.DisplayMetrics
 import android.view.WindowManager
 import android.util.TypedValue
@@ -24,4 +26,10 @@ fun dpToPx(dp: Float): Int {
 
 fun spToPx(sp: Float): Float {
     return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, Resources.getSystem().displayMetrics)
+}
+
+fun runOnMainLoop(fn: () -> Unit) {
+    Handler(Looper.getMainLooper()).post {
+        fn()
+    }
 }

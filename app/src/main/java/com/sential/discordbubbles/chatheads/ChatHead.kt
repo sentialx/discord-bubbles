@@ -25,8 +25,6 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
 
     private val paint = Paint()
 
-    val messages = mutableListOf<Message>()
-
     private var initialX = 0.0f
     private var initialY = 0.0f
 

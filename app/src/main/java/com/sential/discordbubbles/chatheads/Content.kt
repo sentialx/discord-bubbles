@@ -3,7 +3,6 @@ package com.sential.discordbubbles.chatheads
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.text.Editable
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
@@ -15,6 +14,7 @@ import com.sential.discordbubbles.*
 import com.sential.discordbubbles.client.*
 import com.sential.discordbubbles.utils.*
 import kotlinx.android.synthetic.main.chat_head_content.view.*
+import net.dv8tion.jda.api.entities.Message
 
 
 class Content(context: Context): LinearLayout(context) {
@@ -29,7 +29,7 @@ class Content(context: Context): LinearLayout(context) {
     private var lastAuthorId: String? = null
     private var lastMessageGroup: View? = null
 
-    var messagesView: RelativeLayout
+    private var messagesView: RelativeLayout
 
     init {
         inflate(context, R.layout.chat_head_content, this)
@@ -45,6 +45,7 @@ class Content(context: Context): LinearLayout(context) {
 
         sendBtn.setOnClickListener {
             val bubble = OverlayService.instance.chatHeads.activeChatHead
+            // TODO: add mentioning users
             bubble?.guildInfo?.channel?.sendMessage(editText.text)?.queue()
             editText.text.clear()
         }
@@ -77,12 +78,18 @@ class Content(context: Context): LinearLayout(context) {
 
         messagesView.removeAllViews()
 
-        for (message in chatHead.messages) {
-            addMessage(message)
+        chatHead.guildInfo.channel.history.retrievePast(50).queue { result ->
+            runOnMainLoop {
+                val arr = result.reversed()
+                for (message in arr) {
+                    addMessage(message, false)
+                }
+                scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
+            }
         }
     }
 
-    fun addMessage(message: Message) {
+    fun addMessage(message: Message, scrollToBottom: Boolean = true) {
         val view: View
 
         if (lastAuthorId != null && lastAuthorId == message.author.id && lastMessageGroup != null) {
@@ -121,14 +128,16 @@ class Content(context: Context): LinearLayout(context) {
         val messagesView: LinearLayout = view.findViewById(R.id.group_messages)
         val messageView = inflate(context, R.layout.message, null)
 
-        messageView.findViewById<TextView>(R.id.msg_body).text = message.body
+        messageView.findViewById<TextView>(R.id.msg_body).text = message.contentRaw
 
         messagesView.addView(messageView)
 
         lastMessageGroup = view
         lastAuthorId = message.author.id
 
-        scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
+        if (scrollToBottom) {
+            scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
+        }
     }
 
     fun hideContent() {

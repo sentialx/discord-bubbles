@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import android.os.Looper
 import com.sential.discordbubbles.chatheads.*
+import com.sential.discordbubbles.utils.runOnMainLoop
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.SelfUser
@@ -55,15 +56,11 @@ class Client : ListenerAdapter() {
         }
 
         if (guildInfo != null) {
-            Handler(Looper.getMainLooper()).post {
+            runOnMainLoop {
                 val chatHead = OverlayService.instance.chatHeads.add(guildInfo)
-                val message = Message(msg.author, msg.contentRaw, msg.timeCreated, msg.channel.id)
-
-                if (chatHead.guildInfo.isServer && chatHead.guildInfo.channel.id == message.channel || chatHead.guildInfo.isPrivate) {
-                    chatHead.messages.add(message)
-
+                if (chatHead.guildInfo.isServer && chatHead.guildInfo.channel.id == msg.channel.id || chatHead.guildInfo.isPrivate) {
                     if (OverlayService.instance.chatHeads.activeChatHead == chatHead) {
-                        OverlayService.instance.chatHeads.content.addMessage(message)
+                        OverlayService.instance.chatHeads.content.addMessage(msg)
                     }
                 }
             }
