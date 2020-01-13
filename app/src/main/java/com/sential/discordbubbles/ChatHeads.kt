@@ -118,8 +118,14 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }
     }
 
-    fun setTop(chatHead: ChatHead) {
+    fun setTop(chatHead: ChatHead?) {
         destroySpringChains()
+
+        if (chatHead == null) {
+            topChatHead?.isTop = false
+            topChatHead = null
+            return
+        }
 
         topChatHead?.isTop = false
         chatHead.isTop = true
@@ -243,7 +249,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
         } else {
-            setTop(topChatHead!!)
+            setTop(topChatHead)
             rearrangeExpanded(false)
         }
 
@@ -278,11 +284,10 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         close.hide()
 
         postDelayed({
-            topChatHead!!.springY.currentValue = 0.0
-            topChatHead!!.springX.currentValue = 0.0
-
+            setTop(null)
             chatHeads.forEach {
-                it.visibility = View.INVISIBLE
+                this.removeView(it)
+                chatHeads.remove(it)
             }
         }, 300)
     }
@@ -360,7 +365,6 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                     detectedOutOfBounds = true
                 }
             }
-
 
             if (!moving) {
                 if (spring === chatHead.springX) {
