@@ -13,16 +13,6 @@ import com.sential.discordbubbles.client.GuildInfo
 import com.sential.discordbubbles.utils.*
 import java.util.*
 import kotlin.math.*
-import android.view.KeyEvent.KEYCODE_BACK
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-
-
-
-
-
-
 
 class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     companion object {
