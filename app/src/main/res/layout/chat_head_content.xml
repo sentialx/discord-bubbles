@@ -39,6 +39,7 @@
                             android:text="\# "
                             android:alpha="0.54"
                             android:id="@+id/hashtag"
+                            android:layout_marginTop="-1dp"
                             android:textSize="24sp"
                             android:textStyle="bold"
                             android:layout_height="wrap_content"

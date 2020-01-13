@@ -246,6 +246,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     }
 
     fun collapse() {
+        if (chatHeads.size == 0) return
+
         toggled = false
         collapsing = true
 

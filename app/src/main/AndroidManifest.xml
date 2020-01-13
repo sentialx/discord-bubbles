@@ -5,7 +5,8 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
@@ -24,14 +25,7 @@
         </activity>
 
         <service android:name=".chatheads.OverlayService"
-                 android:exported="false"/>
-
-        <service android:name=".NotifyService"
-                 android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService"/>
-            </intent-filter>
-        </service>
+                 android:exported="true"/>
     </application>
 
 </manifest>
