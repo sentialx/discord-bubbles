@@ -65,6 +65,22 @@
                             android:layout_width="wrap_content" />
                 </LinearLayout>
             </LinearLayout>
+            <LinearLayout
+                    android:id="@+id/open_external"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center">
+                <ImageView
+                        android:layout_width="24dp"
+                        android:layout_marginLeft="2dp"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_open_in_new_black_24dp"
+                        android:alpha="0.54"
+                        />
+            </LinearLayout>
         </LinearLayout>
 
         <ScrollView

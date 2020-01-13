@@ -11,10 +11,12 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringSystem
 import com.sential.discordbubbles.*
-import com.sential.discordbubbles.client.*
 import com.sential.discordbubbles.utils.*
 import kotlinx.android.synthetic.main.chat_head_content.view.*
 import net.dv8tion.jda.api.entities.Message
+import android.content.Intent
+import android.net.Uri
+import net.dv8tion.jda.api.entities.ChannelType
 
 
 class Content(context: Context): LinearLayout(context) {
@@ -42,6 +44,20 @@ class Content(context: Context): LinearLayout(context) {
 
         val editText: EditText = findViewById(R.id.editText)
         val sendBtn: LinearLayout = findViewById(R.id.chat_send)
+        val openExternalBtn: LinearLayout = findViewById(R.id.open_external)
+
+        openExternalBtn.setOnClickListener {
+            val bubble = OverlayService.instance.chatHeads.activeChatHead
+            if (bubble != null) {
+                val scope = if (bubble.guildInfo.isPrivate) "@me" else bubble.guildInfo.id
+                val url = "https://discordapp.com/channels/$scope/${bubble.guildInfo.channel.id}"
+                val i = Intent(Intent.ACTION_VIEW)
+                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                i.data = Uri.parse(url)
+                OverlayService.instance.startActivity(i)
+                OverlayService.instance.chatHeads.collapse()
+            }
+        }
 
         sendBtn.setOnClickListener {
             val bubble = OverlayService.instance.chatHeads.activeChatHead
