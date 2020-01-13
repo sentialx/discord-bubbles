@@ -45,9 +45,11 @@ class Content(context: Context): LinearLayout(context) {
 
         sendBtn.setOnClickListener {
             val bubble = OverlayService.instance.chatHeads.activeChatHead
-            // TODO: add mentioning users
-            bubble?.guildInfo?.channel?.sendMessage(editText.text)?.queue()
-            editText.text.clear()
+            if (!editText.text.isNullOrEmpty()) {
+                // TODO: add mentioning users
+                bubble?.guildInfo?.channel?.sendMessage(editText.text)?.queue()
+                editText.text.clear()
+            }
         }
 
         scaleSpring.addListener(object : SimpleSpringListener() {

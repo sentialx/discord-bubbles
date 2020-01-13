@@ -105,16 +105,16 @@
             android:background="@drawable/input_rounded" />
             <LinearLayout
                     android:id="@+id/chat_send"
-                    android:layout_width="42dp"
+                    android:layout_width="44dp"
                     android:layout_height="match_parent"
                     android:orientation="horizontal"
                     android:clickable="true"
                     android:focusable="true"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:gravity="center">
+                    android:background="?android:attr/selectableItemBackground">
 
                 <ImageView
-                        android:layout_width="32dp"
+                        android:layout_width="36dp"
+                        android:layout_marginLeft="2dp"
                         android:layout_height="match_parent"
                         android:src="@android:drawable/ic_menu_send"
                        />
