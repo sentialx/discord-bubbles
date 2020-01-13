@@ -28,7 +28,7 @@
                     android:text="user"
                     android:textSize="16dp"
                     android:id="@+id/group_author"
-                    android:textColor="?android:textColorPrimaryInverse"
+                    android:textColor="#fff"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
             </TextView>

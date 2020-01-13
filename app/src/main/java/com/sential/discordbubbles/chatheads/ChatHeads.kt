@@ -13,6 +13,16 @@ import com.sential.discordbubbles.client.GuildInfo
 import com.sential.discordbubbles.utils.*
 import java.util.*
 import kotlin.math.*
+import android.view.KeyEvent.KEYCODE_BACK
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+
+
+
+
+
+
 
 class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     companion object {
@@ -35,8 +45,9 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     var chatHeads = ArrayList<ChatHead>()
 
     var wasMoving = false
-    var captured = false
-    var movingOutOfClose = false
+    var closeCaptured = false
+
+    private var movingOutOfClose = false
 
     private var initialX = 0.0f
     private var initialY = 0.0f
@@ -99,9 +110,11 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         OverlayService.instance.windowManager.addView(this, params)
         this.addView(content)
 
+        isFocusableInTouchMode = true
+
         motionTracker.setOnTouchListener(this)
 
-        this.setOnTouchListener{ v, event ->
+        setOnTouchListener{ v, event ->
             v.performClick()
 
             when (event.action) {
@@ -115,6 +128,13 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             return@setOnTouchListener false
         }
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        return if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+            collapse()
+            true
+        } else super.dispatchKeyEvent(event)
     }
 
     fun setTop(chatHead: ChatHead?) {
@@ -275,7 +295,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     private fun onClose() {
         close.hide()
 
-        if (captured) {
+        if (closeCaptured) {
             postDelayed({
                 removeAll()
             }, 300)
@@ -346,7 +366,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
         content.pivotY = chatHead.height.toFloat()
 
-        if (topChatHead != null && !moving && distance(close.x, topChatHead!!.springX.currentValue.toFloat(), close.y, topChatHead!!.springY.currentValue.toFloat()) < CLOSE_CAPTURE_DISTANCE * CLOSE_CAPTURE_DISTANCE && !captured && close.visibility == View.VISIBLE) {
+        if (topChatHead != null && !moving && distance(close.x, topChatHead!!.springX.currentValue.toFloat(), close.y, topChatHead!!.springY.currentValue.toFloat()) < CLOSE_CAPTURE_DISTANCE * CLOSE_CAPTURE_DISTANCE && !closeCaptured && close.visibility == View.VISIBLE) {
             topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
             topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
 
@@ -355,7 +375,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             onClose()
 
-            captured = true
+            closeCaptured = true
         }
 
         if (wasMoving) {
@@ -449,7 +469,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
                 onClose()
 
-                if (captured) return true
+                if (closeCaptured) return true
 
                 if (!moving) {
                     if (!toggled) {
@@ -460,7 +480,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         motionTrackerParams.flags = motionTrackerParams.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                         OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
 
-                        params.flags = (params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()) or WindowManager.LayoutParams.FLAG_DIM_BEHIND or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
+                        params.flags = (params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()) or WindowManager.LayoutParams.FLAG_DIM_BEHIND and WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv() and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
                         OverlayService.instance.windowManager.updateViewLayout(this, params)
 
                         topChatHead!!.isActive = true
@@ -557,8 +577,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
                         close.springScale.endValue = CLOSE_ADDITIONAL_SIZE.toDouble()
 
-                        captured = true
-                    } else if (captured) {
+                        closeCaptured = true
+                    } else if (closeCaptured) {
                         topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
                         topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
 
@@ -567,7 +587,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         topChatHead!!.springX.endValue = initialX + (event.rawX - initialTouchX).toDouble()
                         topChatHead!!.springY.endValue = initialY + (event.rawY - initialTouchY).toDouble()
 
-                        captured = false
+                        closeCaptured = false
 
                         movingOutOfClose = true
 

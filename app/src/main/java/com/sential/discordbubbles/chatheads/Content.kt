@@ -14,6 +14,13 @@ import com.sential.discordbubbles.*
 import com.sential.discordbubbles.client.*
 import com.sential.discordbubbles.utils.*
 import kotlinx.android.synthetic.main.chat_head_content.view.*
+import android.view.KeyEvent.KEYCODE_BACK
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.view.KeyEvent
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+
+
+
 
 class Content(context: Context): LinearLayout(context) {
     private val springSystem = SpringSystem.create()

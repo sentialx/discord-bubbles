@@ -49,7 +49,7 @@ class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
     }
 
     private fun onPositionUpdate() {
-        if (chatHeads.captured && chatHeads.topChatHead != null) {
+        if (chatHeads.closeCaptured && chatHeads.topChatHead != null) {
             chatHeads.topChatHead!!.springX.endValue = springX.currentValue + width / 2 - chatHeads.topChatHead!!.width / 2 + 2
             chatHeads.topChatHead!!.springY.endValue = springY.currentValue + height / 2 - chatHeads.topChatHead!!.height / 2 + 2
         }
@@ -65,7 +65,7 @@ class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
             override fun onSpringUpdate(spring: Spring) {
                 y = spring.currentValue.toFloat()
 
-                if (chatHeads.captured && chatHeads.wasMoving && chatHeads.topChatHead != null) {
+                if (chatHeads.closeCaptured && chatHeads.wasMoving && chatHeads.topChatHead != null) {
                     chatHeads.topChatHead!!.springY.currentValue = spring.currentValue
                 }
 

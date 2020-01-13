@@ -48,7 +48,7 @@ internal class InnerReceiver : BroadcastReceiver() {
         if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS == action) {
             val reason = intent.getStringExtra("reason")
             if (reason != null) {
-                // OverlayService.instance.hide()
+                OverlayService.instance.chatHeads.collapse()
             }
         }
     }
