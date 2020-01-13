@@ -18,10 +18,10 @@ import kotlin.math.*
 class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     companion object {
         val CHAT_HEAD_OUT_OF_SCREEN_X: Int = WindowManagerHelper.dpToPx(10f)
-        val CHAT_HEAD_SIZE: Int = WindowManagerHelper.dpToPx(64f)
+        val CHAT_HEAD_SIZE: Int = WindowManagerHelper.dpToPx(62f)
         val CHAT_HEAD_PADDING: Int = WindowManagerHelper.dpToPx(6f)
         val CHAT_HEAD_EXPANDED_PADDING: Int = WindowManagerHelper.dpToPx(4f)
-        val CHAT_HEAD_EXPANDED_MARGIN_TOP: Float = WindowManagerHelper.dpToPx(4f).toFloat()
+        val CHAT_HEAD_EXPANDED_MARGIN_TOP: Float = WindowManagerHelper.dpToPx(6f).toFloat()
         val CLOSE_SIZE = WindowManagerHelper.dpToPx(64f)
         val CLOSE_CAPTURE_DISTANCE = WindowManagerHelper.dpToPx(100f)
         val CLOSE_ADDITIONAL_SIZE = WindowManagerHelper.dpToPx(24f)
@@ -520,15 +520,16 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         }
                     }
 
-                    if (xVelocity < 0) {
-                        topChatHead!!.springX.velocity = max(xVelocity, maxVelocityX)
+                    xVelocity = if (xVelocity < 0) {
+                        max(xVelocity - 1000.0, maxVelocityX)
                     } else {
-                        topChatHead!!.springX.velocity = min(xVelocity, maxVelocityX)
+                        min(xVelocity + 1000.0, maxVelocityX)
                     }
 
-                    initialVelocityX = topChatHead!!.springX.velocity
-                    initialVelocityY = topChatHead!!.springY.velocity
+                    initialVelocityX = xVelocity
+                    initialVelocityY = yVelocity
 
+                    topChatHead!!.springX.velocity = xVelocity
                     topChatHead!!.springY.velocity = yVelocity
                 }
 
