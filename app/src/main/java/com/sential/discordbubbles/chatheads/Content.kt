@@ -107,6 +107,7 @@ class Content(context: Context): LinearLayout(context) {
                 params.addRule(RelativeLayout.BELOW, prev.id)
                 root.layoutParams = params
             } else {
+                params.topMargin = dpToPx(8f)
                 root.layoutParams = params
             }
 
