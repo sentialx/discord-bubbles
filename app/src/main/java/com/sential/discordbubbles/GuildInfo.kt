@@ -2,6 +2,8 @@ package com.sential.discordbubbles
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.support.v4.content.res.ResourcesCompat
 import java.io.IOException
 import java.net.HttpURLConnection
 
@@ -31,7 +33,11 @@ class GuildInfo(val id: String, val name: String, avatarUrl: String, val channel
     set(value) {
         field = value
         if (value != null) {
-            chatHeadBitmap = value.addBackground().makeCircular().scaleToSize(ChatHeads.CHAT_HEAD_SIZE).addShadow()
+            chatHeadBitmap = value
+                .addBackground(Color.WHITE)
+                .makeCircular()
+                .scaleToSize(ChatHeads.CHAT_HEAD_SIZE)
+                .addShadow()
             onAvatarChange?.let { it() }
         }
     }

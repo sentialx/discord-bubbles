@@ -96,10 +96,8 @@ class Content(context: Context): LinearLayout(context) {
             if (messagesView.childCount > 0) {
                 val prev = messagesView.getChildAt(messagesView.childCount - 1)
                 params.addRule(RelativeLayout.BELOW, prev.id)
-                params.topMargin = WindowManagerHelper.dpToPx(4f)
                 root.layoutParams = params
             } else {
-                params.topMargin = WindowManagerHelper.dpToPx(16f)
                 root.layoutParams = params
             }
 

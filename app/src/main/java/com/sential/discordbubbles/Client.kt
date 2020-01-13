@@ -28,7 +28,7 @@ class Client : ListenerAdapter() {
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val msg = event.message
-
+        
         var guildInfo: GuildInfo? = null
 
         if (event.channelType === ChannelType.TEXT) {

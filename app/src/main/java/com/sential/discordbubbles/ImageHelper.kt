@@ -6,13 +6,15 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.BlurMaskFilter
 import android.opengl.ETC1.getHeight
 import android.opengl.ETC1.getWidth
+import android.support.annotation.ColorInt
+import android.support.v4.content.res.ResourcesCompat
 import java.io.IOException
 import java.net.HttpURLConnection
 
-fun Bitmap.addBackground(): Bitmap {
+fun Bitmap.addBackground(color: Int): Bitmap {
     val newBitmap = Bitmap.createBitmap(width, height, config)
     val canvas = Canvas(newBitmap)
-    canvas.drawColor(Color.BLACK)
+    canvas.drawColor(color)
     val rect = Rect(0, 0, width, height)
     canvas.drawBitmap(this, rect, rect, null)
     return newBitmap
