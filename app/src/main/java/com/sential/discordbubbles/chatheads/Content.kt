@@ -3,6 +3,7 @@ package com.sential.discordbubbles.chatheads
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.text.Editable
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
@@ -14,12 +15,6 @@ import com.sential.discordbubbles.*
 import com.sential.discordbubbles.client.*
 import com.sential.discordbubbles.utils.*
 import kotlinx.android.synthetic.main.chat_head_content.view.*
-import android.view.KeyEvent.KEYCODE_BACK
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.view.KeyEvent
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-
-
 
 
 class Content(context: Context): LinearLayout(context) {
@@ -45,6 +40,15 @@ class Content(context: Context): LinearLayout(context) {
         messagesView = findViewById(R.id.messages)
         scrollView = findViewById(R.id.scrollView)
 
+        val editText: EditText = findViewById(R.id.editText)
+        val sendBtn: LinearLayout = findViewById(R.id.chat_send)
+
+        sendBtn.setOnClickListener {
+            val bubble = OverlayService.instance.chatHeads.activeChatHead
+            bubble?.guildInfo?.channel?.sendMessage(editText.text)?.queue()
+            editText.text.clear()
+        }
+
         scaleSpring.addListener(object : SimpleSpringListener() {
             override fun onSpringUpdate(spring: Spring) {
                 scaleX = spring.currentValue.toFloat()
@@ -62,7 +66,7 @@ class Content(context: Context): LinearLayout(context) {
             hashTagView.visibility = GONE
             channelView.text = chatHead.guildInfo.name
         } else {
-            channelView.text = chatHead.guildInfo.channel?.name
+            channelView.text = chatHead.guildInfo.channel.name
             serverView.text = chatHead.guildInfo.name
             serverView.visibility = VISIBLE
             hashTagView.visibility = VISIBLE

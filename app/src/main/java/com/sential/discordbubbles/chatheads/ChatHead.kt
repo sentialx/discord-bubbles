@@ -10,9 +10,6 @@ import com.sential.discordbubbles.utils.*
 import kotlin.math.pow
 
 class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHeads.context), View.OnTouchListener, SpringListener {
-    var isTop: Boolean = false
-    var isActive: Boolean = false
-
     var params: WindowManager.LayoutParams = WindowManager.LayoutParams(
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.WRAP_CONTENT,
@@ -106,12 +103,10 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
             }
             MotionEvent.ACTION_UP -> {
                 if (!moving) {
-                    if (currentChatHead.isActive) {
+                    if (currentChatHead == chatHeads.activeChatHead) {
                         chatHeads.collapse()
                     } else {
-                        val selectedChatHead = chatHeads.chatHeads.find { it.isActive }!!
-                        selectedChatHead.isActive = false
-                        currentChatHead.isActive = true
+                        chatHeads.activeChatHead = currentChatHead
 
                         chatHeads.updateActiveContent()
                     }
@@ -119,7 +114,7 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
                     springX.endValue = metrics.widthPixels - width - chatHeads.chatHeads.indexOf(this) * (width + ChatHeads.CHAT_HEAD_EXPANDED_PADDING).toDouble()
                     springY.endValue = ChatHeads.CHAT_HEAD_EXPANDED_MARGIN_TOP.toDouble()
 
-                    if (isActive) {
+                    if (this == chatHeads.activeChatHead) {
                         chatHeads.content.showContent()
                     }
                 }
@@ -133,7 +128,7 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
                 if (ChatHeads.distance(initialTouchX, event.rawX, initialTouchY, event.rawY) > ChatHeads.CHAT_HEAD_DRAG_TOLERANCE.pow(2) && !moving) {
                     moving = true
 
-                    if (isActive) {
+                    if (this == chatHeads.activeChatHead) {
                         chatHeads.content.hideContent()
                     }
                 }

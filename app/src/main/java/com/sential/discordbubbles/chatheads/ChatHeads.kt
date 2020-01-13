@@ -80,6 +80,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     var showContentRunnable: Runnable? = null
 
     var topChatHead: ChatHead? = null
+    var activeChatHead: ChatHead? = null
 
     var content = Content(context)
     private var close = Close(this)
@@ -141,13 +142,9 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         destroySpringChains()
 
         if (chatHead == null) {
-            topChatHead?.isTop = false
             topChatHead = null
             return
         }
-
-        topChatHead?.isTop = false
-        chatHead.isTop = true
 
         chatHeads[chatHeads.indexOf(chatHead)] = chatHeads[0]
         chatHeads[0] = chatHead
@@ -270,9 +267,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         topChatHead!!.springX.endValue = newX
         topChatHead!!.springY.endValue = newY
 
-        chatHeads.forEach {
-            it.isActive = false
-        }
+        activeChatHead = null
 
         content.hideContent()
 
@@ -288,8 +283,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     }
 
     fun updateActiveContent() {
-        val chatHead = chatHeads.find { it.isActive } ?: return
-        content.setInfo(chatHead)
+        if (activeChatHead == null) return
+        content.setInfo(activeChatHead!!)
     }
 
     private fun onClose() {
@@ -356,7 +351,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
         var tmpChatHead: ChatHead? = null
         if (collapsing) tmpChatHead = topChatHead!!
-        else if (chatHead.isActive) tmpChatHead = chatHead
+        else if (chatHead == activeChatHead) tmpChatHead = chatHead
 
         if (tmpChatHead != null) {
             content.x = tmpChatHead.springX.currentValue.toFloat() - metrics.widthPixels.toFloat() + chatHeads.indexOf(tmpChatHead) * (tmpChatHead.width + CHAT_HEAD_EXPANDED_PADDING) + tmpChatHead.width
@@ -483,7 +478,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         params.flags = (params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()) or WindowManager.LayoutParams.FLAG_DIM_BEHIND and WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv() and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
                         OverlayService.instance.windowManager.updateViewLayout(this, params)
 
-                        topChatHead!!.isActive = true
+                        activeChatHead = topChatHead
 
                         updateActiveContent()
 
