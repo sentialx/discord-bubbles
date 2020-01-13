@@ -1,4 +1,4 @@
-package com.sential.discordbubbles
+package com.sential.discordbubbles.chatheads
 
 import android.app.Service
 import android.content.BroadcastReceiver
@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.view.*
 import android.content.IntentFilter
+import com.sential.discordbubbles.client.Client
 
 class OverlayService : Service() {
     companion object {
@@ -21,7 +22,7 @@ class OverlayService : Service() {
 
         instance = this
 
-        var client = Client()
+        Client()
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 

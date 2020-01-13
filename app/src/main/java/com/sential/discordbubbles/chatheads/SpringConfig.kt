@@ -1,4 +1,4 @@
-package com.sential.discordbubbles
+package com.sential.discordbubbles.chatheads
 
 import com.facebook.rebound.SpringConfig
 

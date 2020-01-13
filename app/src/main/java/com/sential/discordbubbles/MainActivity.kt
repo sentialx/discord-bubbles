@@ -6,8 +6,7 @@ import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
-import android.support.v4.app.NotificationManagerCompat
-
+import com.sential.discordbubbles.chatheads.OverlayService
 
 
 class MainActivity : AppCompatActivity() {
@@ -15,8 +14,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var canDraw = true
-        var intent: Intent? = null
+        val canDraw: Boolean
+        val intent: Intent?
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))

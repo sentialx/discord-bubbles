@@ -1,4 +1,4 @@
-package com.sential.discordbubbles
+package com.sential.discordbubbles.client
 
 import net.dv8tion.jda.api.entities.User
 import java.time.OffsetDateTime

@@ -1,4 +1,4 @@
-package com.sential.discordbubbles
+package com.sential.discordbubbles.client
 
 import android.os.Handler
 import net.dv8tion.jda.api.AccountType
@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import android.os.Looper
+import com.sential.discordbubbles.chatheads.*
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.SelfUser
 

@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".OverlayService"
+        <service android:name=".chatheads.OverlayService"
                  android:exported="false"/>
 
         <service android:name=".NotifyService"

@@ -1,13 +1,9 @@
-package com.sential.discordbubbles
+package com.sential.discordbubbles.utils
 
 import android.graphics.*
 import android.graphics.Bitmap
 import android.graphics.PorterDuffXfermode
 import android.graphics.BlurMaskFilter
-import android.opengl.ETC1.getHeight
-import android.opengl.ETC1.getWidth
-import android.support.annotation.ColorInt
-import android.support.v4.content.res.ResourcesCompat
 import java.io.IOException
 import java.net.HttpURLConnection
 

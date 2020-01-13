@@ -1,4 +1,4 @@
-package com.sential.discordbubbles
+package com.sential.discordbubbles.chatheads
 
 import android.content.Context
 import android.os.Handler
@@ -10,8 +10,10 @@ import android.widget.*
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringSystem
+import com.sential.discordbubbles.*
+import com.sential.discordbubbles.client.*
+import com.sential.discordbubbles.utils.*
 import kotlinx.android.synthetic.main.chat_head_content.view.*
-import java.time.OffsetDateTime
 
 class Content(context: Context): LinearLayout(context) {
     private val springSystem = SpringSystem.create()
@@ -118,7 +120,8 @@ class Content(context: Context): LinearLayout(context) {
     }
 
     fun hideContent() {
-        OverlayService.instance.chatHeads.handler.removeCallbacks(OverlayService.instance.chatHeads.showContentRunnable)
+        OverlayService.instance.chatHeads.handler.removeCallbacks(
+            OverlayService.instance.chatHeads.showContentRunnable)
 
         scaleSpring.endValue = 0.0
 

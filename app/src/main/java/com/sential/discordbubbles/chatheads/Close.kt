@@ -1,4 +1,4 @@
-package com.sential.discordbubbles
+package com.sential.discordbubbles.chatheads
 
 import android.graphics.*
 import android.support.v4.content.ContextCompat
@@ -6,17 +6,19 @@ import android.view.*
 import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import com.facebook.rebound.*
+import com.sential.discordbubbles.*
+import com.sential.discordbubbles.utils.*
 
 class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
     private var params = WindowManager.LayoutParams(
         ChatHeads.CLOSE_SIZE + ChatHeads.CLOSE_ADDITIONAL_SIZE,
         ChatHeads.CLOSE_SIZE + ChatHeads.CLOSE_ADDITIONAL_SIZE,
-        WindowManagerHelper.getLayoutFlag(),
+        getOverlayFlag(),
         WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
         PixelFormat.TRANSLUCENT
     )
 
-    private var gradientParams = FrameLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, WindowManagerHelper.dpToPx(150f))
+    private var gradientParams = FrameLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, dpToPx(150f))
 
     var springSystem = SpringSystem.create()
 
@@ -30,10 +32,10 @@ class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
     val gradient = FrameLayout(context)
 
     private var bitmapBg = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.close_bg), ChatHeads.CLOSE_SIZE, ChatHeads.CLOSE_SIZE, false)!!
-    private val bitmapClose = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.close), WindowManagerHelper.dpToPx(28f), WindowManagerHelper.dpToPx(28f), false)!!
+    private val bitmapClose = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.close), dpToPx(28f), dpToPx(28f), false)!!
 
     fun hide() {
-        val metrics = WindowManagerHelper.getScreenSize()
+        val metrics = getScreenSize()
         springY.endValue = metrics.heightPixels.toDouble() + height
         springX.endValue = metrics.widthPixels.toDouble() / 2 - width / 2
 

@@ -1,11 +1,9 @@
-package com.sential.discordbubbles
+package com.sential.discordbubbles.client
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.support.v4.content.res.ResourcesCompat
-import java.io.IOException
-import java.net.HttpURLConnection
+import com.sential.discordbubbles.chatheads.ChatHeads
+import com.sential.discordbubbles.utils.*
 
 
 data class ChannelInfo(val id: String, val name: String)

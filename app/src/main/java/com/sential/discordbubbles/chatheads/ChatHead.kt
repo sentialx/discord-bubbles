@@ -1,12 +1,12 @@
-package com.sential.discordbubbles
+package com.sential.discordbubbles.chatheads
 
-import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.view.*
 import com.facebook.rebound.*
+import com.sential.discordbubbles.client.*
+import com.sential.discordbubbles.utils.*
 import kotlin.math.pow
 
 class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHeads.context), View.OnTouchListener, SpringListener {
@@ -16,7 +16,7 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
     var params: WindowManager.LayoutParams = WindowManager.LayoutParams(
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.WRAP_CONTENT,
-        WindowManagerHelper.getLayoutFlag(),
+        getOverlayFlag(),
         0,
         PixelFormat.TRANSLUCENT
     )
@@ -92,7 +92,7 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         val currentChatHead = chatHeads.chatHeads.find { it == v }!!
 
-        val metrics = WindowManagerHelper.getScreenSize()
+        val metrics = getScreenSize()
 
         when (event!!.action) {
             MotionEvent.ACTION_DOWN -> {
