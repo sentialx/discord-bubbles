@@ -35,8 +35,6 @@ class OverlayService : Service() {
 
         instance = this
 
-        Client()
-
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
         chatHeads = ChatHeads(this)

@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.SelfUser
 
-class Client : ListenerAdapter() {
+class Client(token: String) : ListenerAdapter() {
     companion object {
         lateinit var instance: Client
     }
@@ -19,7 +19,7 @@ class Client : ListenerAdapter() {
     val jda: JDA
 
     init {
-        jda = JDABuilder(AccountType.CLIENT).setToken(DiscordTestToken.DISCORD_TOKEN)
+        jda = JDABuilder(AccountType.CLIENT).setToken(token)
             .addEventListeners(this)
             .build()
 
