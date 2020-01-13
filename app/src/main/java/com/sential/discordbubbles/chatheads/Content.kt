@@ -22,8 +22,8 @@ class Content(context: Context): LinearLayout(context) {
     private val scaleSpring = springSystem.createSpring()
 
     private var channelView: TextView
-    private var serverView: TextView
     private var hashTagView: TextView
+    private var atView: TextView
     private var scrollView: ScrollView
 
     private var lastAuthorId: String? = null
@@ -35,8 +35,8 @@ class Content(context: Context): LinearLayout(context) {
         inflate(context, R.layout.chat_head_content, this)
 
         channelView = findViewById(R.id.channel)
-        serverView = findViewById(R.id.server)
         hashTagView = findViewById(R.id.hashtag)
+        atView = findViewById(R.id.at)
         messagesView = findViewById(R.id.messages)
         scrollView = findViewById(R.id.scrollView)
 
@@ -65,14 +65,13 @@ class Content(context: Context): LinearLayout(context) {
 
     fun setInfo(chatHead: ChatHead) {
         if (chatHead.guildInfo.isPrivate) {
-            serverView.visibility = GONE
-            hashTagView.visibility = GONE
+            atView.visibility = View.VISIBLE
+            hashTagView.visibility = View.GONE
             channelView.text = chatHead.guildInfo.name
         } else {
+            atView.visibility = View.GONE
+            hashTagView.visibility = View.VISIBLE
             channelView.text = chatHead.guildInfo.channel.name
-            serverView.text = chatHead.guildInfo.name
-            serverView.visibility = VISIBLE
-            hashTagView.visibility = VISIBLE
         }
 
         lastAuthorId = null
@@ -86,7 +85,11 @@ class Content(context: Context): LinearLayout(context) {
                 for (message in arr) {
                     addMessage(message, false)
                 }
-                scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
+                scrollView.isSmoothScrollingEnabled = false
+                scrollView.post {
+                    scrollView.fullScroll(ScrollView.FOCUS_DOWN)
+                    scrollView.isSmoothScrollingEnabled = true
+                }
             }
         }
     }
