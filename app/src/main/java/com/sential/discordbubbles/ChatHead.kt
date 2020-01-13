@@ -101,8 +101,8 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
                 initialTouchX = event.rawX
                 initialTouchY = event.rawY
 
-                scaleX = 0.9f
-                scaleY = 0.9f
+                scaleX = 0.92f
+                scaleY = 0.92f
             }
             MotionEvent.ACTION_UP -> {
                 if (!moving) {

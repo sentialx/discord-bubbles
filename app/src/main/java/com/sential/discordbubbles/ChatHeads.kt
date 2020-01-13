@@ -65,6 +65,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
     private var motionTracker = LinearLayout(context)
 
+    private var detectedOutOfBounds = false
+
     var showContentRunnable: Runnable? = null
 
     var topChatHead: ChatHead? = null
@@ -349,21 +351,16 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             lastY = chatHead.springY.currentValue
 
-            if (abs(chatHead.springY.velocity) > 3000 && (chatHead.springX.currentValue > metrics.widthPixels - chatHead.width + CHAT_HEAD_OUT_OF_SCREEN_X / 2 || chatHead.springX.currentValue < -CHAT_HEAD_OUT_OF_SCREEN_X / 2) && abs(initialVelocityX) > 3000) {
-                chatHead.springY.velocity = 3000.0 * if (initialVelocityY < 0) -1 else 1
-            }
-
-            if ((chatHead.springX.currentValue < -CHAT_HEAD_OUT_OF_SCREEN_X / 2 && initialVelocityX < -3000 || chatHead.springX.currentValue > metrics.widthPixels - chatHead.width  + CHAT_HEAD_OUT_OF_SCREEN_X / 2) && abs(initialVelocityY) < abs(initialVelocityX)) {
-                chatHead.springY.velocity = 0.0
-            }
-
-            if (abs(chatHead.springY.velocity) > 500) {
+            if (!detectedOutOfBounds) {
                 if (chatHead.springY.currentValue < 0) {
-                    chatHead.springY.velocity = -500.0
+                    chatHead.springY.endValue = 0.0
+                    detectedOutOfBounds = true
                 } else if (chatHead.springY.currentValue > metrics.heightPixels) {
-                    chatHead.springY.velocity = 500.0
+                    chatHead.springY.endValue = metrics.heightPixels - CHAT_HEAD_SIZE.toDouble()
+                    detectedOutOfBounds = true
                 }
             }
+
 
             if (!moving) {
                 if (spring === chatHead.springX) {
@@ -414,11 +411,12 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 wasMoving = false
                 collapsing = false
                 blockAnim = false
+                detectedOutOfBounds = false
 
                 close.show()
 
-                topChatHead!!.scaleX = 0.9f
-                topChatHead!!.scaleY = 0.9f
+                topChatHead!!.scaleX = 0.92f
+                topChatHead!!.scaleY = 0.92f
 
                 topChatHead!!.springX.springConfig = SpringConfigs.DRAGGING
                 topChatHead!!.springY.springConfig = SpringConfigs.DRAGGING
