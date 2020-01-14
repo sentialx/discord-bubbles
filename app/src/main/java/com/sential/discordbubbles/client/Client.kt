@@ -13,17 +13,21 @@ import net.dv8tion.jda.api.entities.SelfUser
 class Client(token: String) : ListenerAdapter() {
     companion object {
         lateinit var instance: Client
+        private var isInitialized = false
+
+        fun login(token: String): Client {
+            return Client(token)
+        }
     }
 
     var user: SelfUser
-    val jda: JDA
+    val jda: JDA = JDABuilder(AccountType.CLIENT).setToken(token)
+        .addEventListeners(this)
+        .build()
 
     init {
-        jda = JDABuilder(AccountType.CLIENT).setToken(token)
-            .addEventListeners(this)
-            .build()
-
         instance = this
+        isInitialized = true
 
         user = jda.selfUser
 

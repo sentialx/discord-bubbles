@@ -21,6 +21,13 @@ import android.widget.Toast
 import com.sential.discordbubbles.utils.fetchBitmap
 import com.sential.discordbubbles.utils.getAvatarUrl
 import com.sential.discordbubbles.utils.makeCircular
+import android.app.ActivityManager
+import android.support.v4.app.SupportActivity
+import android.support.v4.app.SupportActivity.ExtraData
+import android.support.v4.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+
+
 
 val REQUEST_CODE = 5469
 
@@ -43,12 +50,14 @@ class MainActivity : AppCompatActivity() {
 
         if (!Settings.canDrawOverlays(this)) {
             startActivityForResult(intent, REQUEST_CODE)
-        } else {
+        } else if (!OverlayService.initialized) {
             startService(service)
         }
 
         webView = findViewById(R.id.webview)
         prefs = getSharedPreferences("data", Context.MODE_PRIVATE)
+
+        if (OverlayService.initialized) return
 
         val token = prefs.getString("token", null)
 
@@ -121,14 +130,14 @@ class MainActivity : AppCompatActivity() {
     fun login(token: String?) {
         if (token != null) {
             Thread {
-                Client(token)
+                Client.login(token)
             }.start()
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_CODE && Settings.canDrawOverlays(this)) {
-            if (Settings.canDrawOverlays(this@MainActivity)) {
+            if (Settings.canDrawOverlays(this@MainActivity) && !OverlayService.initialized) {
                 startService(service)
             }
         }
