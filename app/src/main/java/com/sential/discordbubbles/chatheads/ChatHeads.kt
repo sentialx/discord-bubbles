@@ -289,6 +289,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         var chatHead = chatHeads.find { it.guildInfo.id == guildInfo.id }
 
         if (chatHead != null) {
+            chatHead.notifications++
             return chatHead
         }
 
@@ -482,7 +483,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             lastY = chatHead.springY.currentValue
 
-            if (!detectedOutOfBounds && !closeCaptured) {
+            if (!detectedOutOfBounds && !closeCaptured && !closeVelocityCaptured) {
                 if (chatHead.springY.currentValue < 0) {
                     chatHead.springY.endValue = 0.0
                     detectedOutOfBounds = true
@@ -589,6 +590,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         OverlayService.instance.windowManager.updateViewLayout(this, params)
 
                         activeChatHead = topChatHead
+
+                        activeChatHead?.notifications = 0
 
                         updateActiveContent()
 

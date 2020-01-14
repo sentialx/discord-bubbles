@@ -4,12 +4,17 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.view.*
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import com.facebook.rebound.*
+import com.sential.discordbubbles.R
 import com.sential.discordbubbles.client.*
 import com.sential.discordbubbles.utils.*
 import kotlin.math.pow
 
-class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHeads.context), View.OnTouchListener, SpringListener {
+class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(chatHeads.context), View.OnTouchListener, SpringListener {
     var params: WindowManager.LayoutParams = WindowManager.LayoutParams(
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.WRAP_CONTENT,
@@ -33,6 +38,21 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
 
     private var moving = false
 
+    private lateinit var notificationsTextView: TextView
+    private lateinit var notificationsView: LinearLayout
+
+    var notifications = 0
+    set(value) {
+        if (value >= 0) field = value
+
+        if (value == 0) {
+            notificationsView.visibility = GONE
+        } else if (value > 0) {
+            notificationsView.visibility = VISIBLE
+            notificationsTextView.text = "$value"
+        }
+    }
+
     override fun onSpringEndStateChange(spring: Spring?) = Unit
     override fun onSpringAtRest(spring: Spring?) = Unit
     override fun onSpringActivate(spring: Spring?) = Unit
@@ -44,11 +64,18 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
         params.width = ChatHeads.CHAT_HEAD_SIZE + 15
         params.height = ChatHeads.CHAT_HEAD_SIZE + 30
 
+        val view = inflate(context, R.layout.bubble, this)
+
+        val imageView: ImageView = view.findViewById(R.id.bubble_avatar)
+        notificationsTextView = view.findViewById(R.id.bubble_notifications_text)
+        notificationsView = view.findViewById(R.id.bubble_notifications)
+
         springX.addListener(object : SimpleSpringListener() {
             override fun onSpringUpdate(spring: Spring) {
                 x = spring.currentValue.toFloat()
             }
         })
+
         springX.springConfig = SpringConfigs.NOT_DRAGGING
         springX.addListener(this)
 
@@ -66,8 +93,12 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
 
         this.setOnTouchListener(this)
 
+        imageView.setImageBitmap(guildInfo.chatHeadBitmap)
+
+        notifications = 1
+
         guildInfo.onAvatarChange = {
-            invalidate()
+            imageView.setImageBitmap(guildInfo.chatHeadBitmap)
         }
     }
 
@@ -76,12 +107,6 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
         val totalVelocity = Math.hypot(springX.velocity, springY.velocity).toInt()
 
         chatHeads.onChatHeadSpringUpdate(this, spring, totalVelocity)
-    }
-
-    override fun onDraw(canvas: Canvas?) {
-        if (guildInfo.chatHeadBitmap != null) {
-            canvas?.drawBitmap(guildInfo.chatHeadBitmap!!, 0f, 0f, paint)
-        }
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
@@ -105,7 +130,7 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): View(chatHea
                         chatHeads.collapse()
                     } else {
                         chatHeads.activeChatHead = currentChatHead
-
+                        currentChatHead.notifications = 0
                         chatHeads.updateActiveContent()
                     }
                 } else {

@@ -38,7 +38,10 @@ class GuildInfo(val id: String, val name: String, avatarUrl: String, val channel
                 .makeCircular()
                 .scaleToSize(ChatHeads.CHAT_HEAD_SIZE)
                 .addShadow()
-            onAvatarChange?.let { it() }
+
+            if (onAvatarChange != null) {
+                onAvatarChange!!()
+            }
         }
     }
 
