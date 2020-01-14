@@ -17,12 +17,15 @@ import android.support.v4.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.os.Build
 import android.support.annotation.RequiresApi
+import android.widget.Toast
 import com.sential.discordbubbles.R
 
 
 class OverlayService : Service() {
     companion object {
         lateinit var instance: OverlayService
+        var initialized = false
+        var shouldShowToast = false
     }
 
     lateinit var windowManager: WindowManager
@@ -34,6 +37,7 @@ class OverlayService : Service() {
         super.onCreate()
 
         instance = this
+        initialized = true
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
@@ -57,7 +61,7 @@ class OverlayService : Service() {
             notificationIntent, 0
         )
 
-        val notification = NotificationCompat.Builder(this, "overlay_service")
+        val notification = NotificationCompat.Builder(this, channelId)
             .setOngoing(true)
             .setContentTitle("Discord chat heads are active")
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -65,6 +69,17 @@ class OverlayService : Service() {
             .setContentIntent(pendingIntent).build()
 
         startForeground(101, notification)
+
+        if (shouldShowToast) {
+            onLogin()
+        }
+    }
+
+    fun onLogin() {
+        Toast.makeText(
+            this, "Logged in successfully",
+            Toast.LENGTH_LONG
+        ).show()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

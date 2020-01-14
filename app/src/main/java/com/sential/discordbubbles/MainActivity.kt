@@ -1,5 +1,6 @@
 package com.sential.discordbubbles
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
@@ -12,8 +13,16 @@ import android.webkit.*
 import android.webkit.PermissionRequest
 import com.sential.discordbubbles.client.Client
 import com.sential.discordbubbles.utils.runOnMainLoop
+import android.content.SharedPreferences
+import android.os.Handler
+import android.os.Looper
+import android.widget.ImageView
 import android.widget.Toast
+import com.sential.discordbubbles.utils.fetchBitmap
+import com.sential.discordbubbles.utils.getAvatarUrl
+import com.sential.discordbubbles.utils.makeCircular
 
+val REQUEST_CODE = 5469
 
 class MainActivity : AppCompatActivity() {
     var service: Intent? = null
@@ -22,20 +31,36 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var cookieManager: CookieManager
 
+    private lateinit var prefs: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        service = Intent(this, OverlayService::class.java)
+
         val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
 
         if (!Settings.canDrawOverlays(this)) {
-            startActivityForResult(intent, 5469)
+            startActivityForResult(intent, REQUEST_CODE)
+        } else {
+            startService(service)
         }
 
         webView = findViewById(R.id.webview)
+        prefs = getSharedPreferences("data", Context.MODE_PRIVATE)
 
-        service = Intent(this, OverlayService::class.java)
+        val token = prefs.getString("token", null)
 
+        if (token == null) {
+            showLogin()
+        } else {
+            login(token)
+            destroyWebView()
+        }
+    }
+
+    private fun showLogin() {
         webView.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(
                 view: WebView,
@@ -43,7 +68,21 @@ class MainActivity : AppCompatActivity() {
             ): WebResourceResponse? {
                 if (request.url.toString() == "https://discordapp.com/api/v6/users/@me/library") {
                     val token = request.requestHeaders.getValue("Authorization")
-                    login(token)
+                    val editor = prefs.edit()
+
+                    editor.putString("token", token)
+                    editor.apply()
+
+                    runOnMainLoop {
+                        Toast.makeText(
+                            OverlayService.instance, "Obtained token, logging in...",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        login(token)
+
+                        destroyWebView()
+                    }
                 }
 
                 return super.shouldInterceptRequest(view, request)
@@ -68,40 +107,30 @@ class MainActivity : AppCompatActivity() {
         cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptThirdPartyCookies(webView, true)
 
-        clearWebViewData()
+        WebStorage.getInstance().deleteAllData()
 
         webView.loadUrl("https://discordapp.com/login")
     }
 
-    fun clearWebViewData() {
+    fun destroyWebView() {
         WebStorage.getInstance().deleteAllData()
+        webView.destroy()
+        (webView.parent as ViewGroup).removeView(webView)
     }
 
     fun login(token: String?) {
-        runOnMainLoop {
-            if (token != null) {
+        if (token != null) {
+            Thread {
                 Client(token)
-
-                clearWebViewData()
-                webView.destroy()
-                (webView.parent as ViewGroup).removeView(webView)
-
-                Toast.makeText(
-                    this, "Logged in successfully",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                if (Settings.canDrawOverlays(this@MainActivity)) {
-                    startService(service)
-                }
-            }
+            }.start()
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (service == null && Settings.canDrawOverlays(this)) {
-            service = Intent(this, OverlayService::class.java)
-            startService(service)
+        if (requestCode == REQUEST_CODE && Settings.canDrawOverlays(this)) {
+            if (Settings.canDrawOverlays(this@MainActivity)) {
+                startService(service)
+            }
         }
     }
 }

@@ -26,6 +26,16 @@ class Client(token: String) : ListenerAdapter() {
         instance = this
 
         user = jda.selfUser
+
+        jda.awaitReady()
+
+        if (OverlayService.initialized) {
+            runOnMainLoop {
+                OverlayService.instance.onLogin()
+            }
+        } else {
+            OverlayService.shouldShowToast = true
+        }
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
