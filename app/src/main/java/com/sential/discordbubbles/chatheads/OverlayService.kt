@@ -7,19 +7,13 @@ import android.content.Intent
 import android.os.IBinder
 import android.view.*
 import android.content.IntentFilter
-import com.sential.discordbubbles.client.Client
-import android.support.v4.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.support.v4.app.NotificationCompat
 import android.graphics.Color
 import com.sential.discordbubbles.MainActivity
-import android.support.v4.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.os.Build
 import android.support.annotation.RequiresApi
 import android.widget.Toast
 import com.sential.discordbubbles.R
-
 
 class OverlayService : Service() {
     companion object {

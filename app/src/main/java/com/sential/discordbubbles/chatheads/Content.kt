@@ -15,6 +15,7 @@ import com.sential.discordbubbles.utils.*
 import kotlinx.android.synthetic.main.chat_head_content.view.*
 import net.dv8tion.jda.api.entities.Message
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import net.dv8tion.jda.api.entities.ChannelType
 
@@ -51,11 +52,7 @@ class Content(context: Context): LinearLayout(context) {
             if (bubble != null) {
                 val scope = if (bubble.guildInfo.isPrivate) "@me" else bubble.guildInfo.id
                 val url = "https://discordapp.com/channels/$scope/${bubble.guildInfo.channel.id}"
-                val i = Intent(Intent.ACTION_VIEW)
-                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                i.data = Uri.parse(url)
-                OverlayService.instance.startActivity(i)
-                OverlayService.instance.chatHeads.collapse()
+                launchDiscord(url)
             }
         }
 
@@ -108,6 +105,48 @@ class Content(context: Context): LinearLayout(context) {
                 }
             }
         }
+    }
+
+    fun launchDiscord(url: String) {
+        val packageName = "com.discord"
+        if (isAppInstalled(context, packageName))
+            if (isAppEnabled(context, packageName)) {
+                val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+                if (intent != null) {
+                    intent.data = Uri.parse(url)
+                    context.startActivity(intent)
+                    OverlayService.instance.chatHeads.collapse()
+                }
+            }
+            else
+                Toast.makeText(context, "Discord app is not enabled.", Toast.LENGTH_SHORT).show()
+        else
+            Toast.makeText(context, "Discord app is not installed.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun isAppInstalled(context: Context, packageName: String): Boolean {
+        val pm = context.packageManager
+        try {
+            pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
+            return true
+        } catch (ignored: PackageManager.NameNotFoundException) {
+        }
+
+        return false
+    }
+
+    private fun isAppEnabled(context: Context, packageName: String): Boolean {
+        var appStatus = false
+        try {
+            val ai = context.packageManager.getApplicationInfo(packageName, 0)
+            if (ai != null) {
+                appStatus = ai.enabled
+            }
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+
+        return appStatus
     }
 
     fun addMessage(message: Message, scrollToBottom: Boolean = true) {
