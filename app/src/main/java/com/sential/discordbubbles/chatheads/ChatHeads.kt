@@ -1,7 +1,7 @@
 package com.sential.discordbubbles.chatheads
 
 import android.content.Context
-import android.graphics.PixelFormat
+import android.graphics.*
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
@@ -13,6 +13,82 @@ import com.sential.discordbubbles.client.GuildInfo
 import com.sential.discordbubbles.utils.*
 import java.util.*
 import kotlin.math.*
+
+class Rectangle(val x: Double, val y: Double, val w: Double, val h: Double) {
+    private val OUT_LEFT = 1
+    private val OUT_TOP = 2
+    private val OUT_RIGHT = 4
+    private val OUT_BOTTOM = 8
+
+    fun outcode(x: Double, y: Double): Int {
+        var out = 0
+
+        when {
+            w <= 0 -> out = out or (OUT_LEFT or OUT_RIGHT)
+            x < this.x -> out = out or OUT_LEFT
+            x > this.x + w -> out = out or OUT_RIGHT
+        }
+        when {
+            h <= 0 -> out = out or (OUT_TOP or OUT_BOTTOM)
+            y < this.y -> out = out or OUT_TOP
+            y > this.y + h -> out = out or OUT_BOTTOM
+        }
+        return out
+    }
+
+    fun intersectsLine(x1: Double, y1: Double, x2: Double, y2: Double): Boolean {
+        var x1 = x1
+        var y1 = y1
+        var out1: Int
+        val out2: Int = outcode(x2, y2)
+        if (out2 == 0) {
+            return true
+        }
+        do {
+            out1 = outcode(x1, y1)
+
+            if (out1 == 0) break
+
+            if (out1 and out2 != 0) {
+                return false
+            }
+            if (out1 and (OUT_LEFT or OUT_RIGHT) != 0) {
+                var x = x
+                if (out1 and OUT_RIGHT != 0) {
+                    x += w
+                }
+                y1 += (x - x1) * (y2 - y1) / (x2 - x1)
+                x1 = x
+            } else {
+                var y = y
+                if (out1 and OUT_BOTTOM != 0) {
+                    y += h
+                }
+                x1 += (y - y1) * (x2 - x1) / (y2 - y1)
+                y1 = y
+            }
+        } while (true)
+
+        return true
+    }
+}
+
+class Line(val x1: Double, val y1: Double, var x2: Double, var y2: Double) {
+    fun intersects(r: Rectangle): Boolean {
+        return r.intersectsLine(x1, y1, x2, y2)
+    }
+
+    private fun f(x: Double): Double {
+        val slope = (y2 - y1) / (x2 - x1)
+        return y1 + (x - x1) * slope
+    }
+
+    fun changeLength(length: Double): Line {
+        val newX1 = x1 - length / 2
+        val newX2 = x2 - length / 2
+        return Line(newX1, f(newX1), newX2, f(newX2))
+    }
+}
 
 class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     companion object {
@@ -38,6 +114,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     var wasMoving = false
     var closeCaptured = false
 
+    private var closeVelocityCaptured = false
+
     private var movingOutOfClose = false
 
     private var initialX = 0.0f
@@ -46,8 +124,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     private var initialTouchX = 0.0f
     private var initialTouchY = 0.0f
 
-    private var initialVelocityX = 0.0
-    private var initialVelocityY = 0.0
+     var initialVelocityX = 0.0
+     var initialVelocityY = 0.0
 
     private var lastY = 0.0
 
@@ -293,12 +371,10 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     }
 
     private fun onClose() {
-        postDelayed({
-            removeAll()
+        removeAll()
 
-            closeCaptured = false
-            movingOutOfClose = false
-        }, 300)
+        closeCaptured = false
+        movingOutOfClose = false
     }
 
     fun removeAll() {
@@ -370,26 +446,35 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }
 
         content.pivotY = chatHead.height.toFloat()
-        val closeCaptureDistanceSquared = CLOSE_CAPTURE_DISTANCE_THROWN * CLOSE_CAPTURE_DISTANCE_THROWN
 
-        // When a chat head has been thrown towards close
-        if (
-            topChatHead != null &&
-            !moving &&
-            distance(close.x, topChatHead!!.springX.currentValue.toFloat(), close.y, topChatHead!!.springY.currentValue.toFloat()) < closeCaptureDistanceSquared &&
-            !closeCaptured &&
-            close.visibility == View.VISIBLE
-        ) {
-            topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
-            topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
+        if (topChatHead != null) {
+            val width = dpToPx(100f)
+            val height = dpToPx(50f)
+            val r1 = Rectangle(close.x.toDouble() - if (isOnRight) dpToPx(32f) else width, close.y.toDouble() - height / 2, close.width.toDouble() + width, close.height.toDouble() + height)
 
-            topChatHead!!.springX.endValue = close.springX.endValue
-            topChatHead!!.springY.endValue = close.springY.endValue
+            val x = topChatHead!!.springX.currentValue + topChatHead!!.params.width / 2
+            val y = topChatHead!!.springY.currentValue + topChatHead!!.params.height / 2
+            val l1 = Line(x, y, initialVelocityX + x, initialVelocityY + y)
 
-            closeCaptured = true
-            close.enlarge()
+            // When a chat head has been thrown towards close
+            if (
+                !moving &&
+                initialVelocityY > 5000.0 &&
+                l1.intersects(r1) &&
+                close.visibility == VISIBLE &&
+                !closeVelocityCaptured
+            ) {
+                closeVelocityCaptured = true
 
-            onClose()
+                topChatHead!!.springX.endValue = close.springX.endValue + close.width / 2 - topChatHead!!.params.width / 2 + 2
+                topChatHead!!.springY.endValue = close.springY.endValue + close.height / 2 - topChatHead!!.params.height / 2 + 2
+
+                close.enlarge()
+
+                postDelayed({
+                    onClose()
+                }, 100)
+            }
         }
 
         if (wasMoving) {
@@ -456,6 +541,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 collapsing = false
                 blockAnim = false
                 detectedOutOfBounds = false
+                closeVelocityCaptured = false
 
                 close.show()
 
@@ -481,7 +567,9 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             MotionEvent.ACTION_UP -> {
                 if (moving) wasMoving = true
 
-                close.hide()
+                postDelayed({
+                    close.hide()
+                }, 100)
 
                 if (closeCaptured) {
                     onClose()
@@ -588,7 +676,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                     close.springX.endValue = (metrics.widthPixels / 2) + (((event.rawX + topChatHead!!.width / 2) / 7) - metrics.widthPixels / 2 / 7) - close.width.toDouble() / 2
                     close.springY.endValue = (metrics.heightPixels - CLOSE_SIZE) + max(((event.rawY + close.height / 2) / 10) - metrics.heightPixels / 10, -dpToPx(30f).toFloat()) - dpToPx(60f).toDouble()
 
-                    if (distance(close.x + close.width / 2, event.rawX, close.y + close.height / 2, event.rawY) < CLOSE_CAPTURE_DISTANCE * CLOSE_CAPTURE_DISTANCE) {
+                    if (distance(close.springX.endValue.toFloat() + close.width / 2, event.rawX, close.springY.endValue.toFloat() + close.height / 2, event.rawY) < CLOSE_CAPTURE_DISTANCE.toDouble().pow(2)) {
                         topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
                         topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
 

@@ -31,6 +31,8 @@ class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
 
     val gradient = FrameLayout(context)
 
+    var hidden = true
+
     private var bitmapBg = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.close_bg), ChatHeads.CLOSE_SIZE, ChatHeads.CLOSE_SIZE, false)!!
     private val bitmapClose = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(OverlayService.instance.resources, R.drawable.close), dpToPx(28f), dpToPx(28f), false)!!
 
@@ -40,9 +42,11 @@ class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
         springX.endValue = metrics.widthPixels.toDouble() / 2 - width / 2
 
         springAlpha.endValue = 0.0
+        hidden = true
     }
 
     fun show() {
+        hidden = false
         visibility = View.VISIBLE
 
         springAlpha.endValue = 1.0
@@ -57,10 +61,10 @@ class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
         springScale.endValue = 1.0
     }
 
-    private fun onPositionUpdate() {
+    fun onPositionUpdate() {
         if (chatHeads.closeCaptured && chatHeads.topChatHead != null) {
-            chatHeads.topChatHead!!.springX.endValue = springX.currentValue + width / 2 - chatHeads.topChatHead!!.width / 2 + 2
-            chatHeads.topChatHead!!.springY.endValue = springY.currentValue + height / 2 - chatHeads.topChatHead!!.height / 2 + 2
+            chatHeads.topChatHead!!.springX.endValue = springX.endValue + width / 2 - chatHeads.topChatHead!!.params.width / 2 + 2
+            chatHeads.topChatHead!!.springY.endValue = springY.endValue + height / 2 - chatHeads.topChatHead!!.params.height / 2 + 2
         }
     }
 
