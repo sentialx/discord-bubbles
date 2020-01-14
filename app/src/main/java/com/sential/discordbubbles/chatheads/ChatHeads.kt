@@ -292,13 +292,12 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     }
 
     private fun onClose() {
-        close.hide()
+        postDelayed({
+            removeAll()
 
-        if (closeCaptured) {
-            postDelayed({
-                removeAll()
-            }, 300)
-        }
+            closeCaptured = false
+            movingOutOfClose = false
+        }, 300)
     }
 
     fun removeAll() {
@@ -377,8 +376,6 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             topChatHead!!.springX.endValue = close.springX.endValue
             topChatHead!!.springY.endValue = close.springY.endValue
-
-            onClose()
 
             closeCaptured = true
         }
@@ -472,9 +469,12 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             MotionEvent.ACTION_UP -> {
                 if (moving) wasMoving = true
 
-                onClose()
+                close.hide()
 
-                if (closeCaptured) return true
+                if (closeCaptured) {
+                    onClose()
+                    return true
+                }
 
                 if (!moving) {
                     if (!toggled) {

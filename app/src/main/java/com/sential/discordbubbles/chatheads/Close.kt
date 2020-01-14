@@ -46,6 +46,7 @@ class Close(var chatHeads: ChatHeads): View(chatHeads.context) {
         visibility = View.VISIBLE
 
         springAlpha.endValue = 1.0
+        springScale.currentValue = 1.0
     }
 
     private fun onPositionUpdate() {
