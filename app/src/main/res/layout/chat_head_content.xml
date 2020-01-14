@@ -11,13 +11,14 @@
             android:orientation="vertical"
             android:id="@+id/contentLayout"
             android:clickable="true"
+            android:clipChildren="true"
             android:layout_marginTop="80dp"
             android:focusable="true">
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:padding="8dp"
-                android:background="#2F3035"
+                android:background="@drawable/toolbar_bg"
                 android:clipToPadding="false"
                 android:elevation="8dp"
                 android:paddingStart="16dp"
