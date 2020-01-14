@@ -238,7 +238,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
         } else {
-            setTop(topChatHead)
+            setTop(chatHead)
             rearrangeExpanded(false)
         }
 
@@ -290,9 +290,11 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     }
 
     fun removeAll() {
+        setTop(null)
         chatHeads.forEach {
-            remove(it)
+            this.removeView(it)
         }
+        chatHeads.clear()
     }
 
     fun remove(chatHead: ChatHead?) {

@@ -92,19 +92,21 @@ class Content(context: Context): LinearLayout(context) {
 
         messagesView.removeAllViews()
 
-        chatHead.guildInfo.channel.history.retrievePast(50).queue { result ->
-            runOnMainLoop {
-                val arr = result.reversed()
-                for (message in arr) {
-                    addMessage(message, false)
-                }
-                scrollView.isSmoothScrollingEnabled = false
-                scrollView.post {
-                    scrollView.fullScroll(ScrollView.FOCUS_DOWN)
-                    scrollView.isSmoothScrollingEnabled = true
+        Thread {
+            chatHead.guildInfo.channel.history.retrievePast(50).queue { result ->
+                runOnMainLoop {
+                    val arr = result.reversed()
+                    for (message in arr) {
+                        addMessage(message, false)
+                    }
+                    scrollView.isSmoothScrollingEnabled = false
+                    scrollView.post {
+                        scrollView.fullScroll(ScrollView.FOCUS_DOWN)
+                        scrollView.isSmoothScrollingEnabled = true
+                    }
                 }
             }
-        }
+        }.start()
     }
 
     fun launchDiscord(url: String) {
