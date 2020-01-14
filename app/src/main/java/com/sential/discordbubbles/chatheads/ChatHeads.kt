@@ -23,6 +23,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         val CHAT_HEAD_EXPANDED_MARGIN_TOP: Float = dpToPx(6f).toFloat()
         val CLOSE_SIZE = dpToPx(64f)
         val CLOSE_CAPTURE_DISTANCE = dpToPx(100f)
+        val CLOSE_CAPTURE_DISTANCE_THROWN = dpToPx(300f)
         val CLOSE_ADDITIONAL_SIZE = dpToPx(24f)
 
         const val CHAT_HEAD_DRAG_TOLERANCE: Float = 20f
@@ -369,8 +370,16 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         }
 
         content.pivotY = chatHead.height.toFloat()
+        val closeCaptureDistanceSquared = CLOSE_CAPTURE_DISTANCE_THROWN * CLOSE_CAPTURE_DISTANCE_THROWN
 
-        if (topChatHead != null && !moving && distance(close.x, topChatHead!!.springX.currentValue.toFloat(), close.y, topChatHead!!.springY.currentValue.toFloat()) < CLOSE_CAPTURE_DISTANCE * CLOSE_CAPTURE_DISTANCE && !closeCaptured && close.visibility == View.VISIBLE) {
+        // When a chat head has been thrown towards close
+        if (
+            topChatHead != null &&
+            !moving &&
+            distance(close.x, topChatHead!!.springX.currentValue.toFloat(), close.y, topChatHead!!.springY.currentValue.toFloat()) < closeCaptureDistanceSquared &&
+            !closeCaptured &&
+            close.visibility == View.VISIBLE
+        ) {
             topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
             topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
 
@@ -378,6 +387,9 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
             topChatHead!!.springY.endValue = close.springY.endValue
 
             closeCaptured = true
+            close.enlarge()
+
+            onClose()
         }
 
         if (wasMoving) {
@@ -385,7 +397,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             lastY = chatHead.springY.currentValue
 
-            if (!detectedOutOfBounds) {
+            if (!detectedOutOfBounds && !closeCaptured) {
                 if (chatHead.springY.currentValue < 0) {
                     chatHead.springY.endValue = 0.0
                     detectedOutOfBounds = true
@@ -580,14 +592,14 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
                         topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
 
-                        close.springScale.endValue = CLOSE_ADDITIONAL_SIZE.toDouble()
+                        close.enlarge()
 
                         closeCaptured = true
                     } else if (closeCaptured) {
                         topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
                         topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
 
-                        close.springScale.endValue = 0.0
+                        close.resetScale()
 
                         topChatHead!!.springX.endValue = initialX + (event.rawX - initialTouchX).toDouble()
                         topChatHead!!.springY.endValue = initialY + (event.rawY - initialTouchY).toDouble()
