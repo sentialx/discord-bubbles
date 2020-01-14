@@ -343,10 +343,10 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
         val metrics = getScreenSize()
 
-        val newX =  if (isOnRight) metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble() else -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
-        val newY = initialY.toDouble()
-
         if (topChatHead != null) {
+            val newX =  if (isOnRight) metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble() else -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
+            val newY = initialY.toDouble()
+
             topChatHead!!.springX.endValue = newX
             topChatHead!!.springY.endValue = newY
         }
