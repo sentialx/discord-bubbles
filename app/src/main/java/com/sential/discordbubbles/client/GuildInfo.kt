@@ -5,11 +5,15 @@ import android.graphics.Color
 import com.sential.discordbubbles.chatheads.ChatHeads
 import com.sential.discordbubbles.utils.*
 
-class GuildInfo(val id: String, val name: String, avatarUrl: String, val channel: Channel) {
-    var avatarUrl: String = avatarUrl
+class GuildInfo(val id: String, val name: String, avatarUrl: String?, val channel: Channel) {
+    var avatarUrl: String? = avatarUrl
         set(value) {
             field = value
-            this.avatarBitmap = fetchBitmap(value)
+            if (value != null) {
+                Thread {
+                    this.avatarBitmap = fetchBitmap(value)
+                }.start()
+            }
         }
 
     init {
@@ -29,10 +33,16 @@ class GuildInfo(val id: String, val name: String, avatarUrl: String, val channel
                 .addShadow()
 
             if (onAvatarChange != null) {
-                onAvatarChange!!()
+                runOnMainLoop {
+                    onAvatarChange!!()
+                }
             }
         }
     }
 
-    var chatHeadBitmap: Bitmap? = null
+    var chatHeadBitmap: Bitmap = Bitmap.createBitmap(ChatHeads.CHAT_HEAD_SIZE, ChatHeads.CHAT_HEAD_SIZE, Bitmap.Config.ARGB_8888)
+        .addBackground(Color.WHITE)
+        .makeCircular()
+        .scaleToSize(ChatHeads.CHAT_HEAD_SIZE)
+        .addShadow()
 }

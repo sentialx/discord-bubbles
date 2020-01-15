@@ -184,9 +184,11 @@ class Content(context: Context): LinearLayout(context) {
             root.id = View.generateViewId()
 
             cacheAvatar(message.author) {
-                view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(it)
+                runOnMainLoop {
+                    view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(it)
+                }
             }
-           
+
             view.findViewById<TextView>(R.id.group_author).text = message.author.name
 
             val params = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT)

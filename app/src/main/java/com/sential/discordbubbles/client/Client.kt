@@ -32,18 +32,16 @@ class Client(token: String, onLogin: (() -> Unit)? = null) : ListenerAdapter() {
 
         val channel = Channel(event.channel)
 
-        if (event.channelType === ChannelType.TEXT) {
-            if (event.guild.iconUrl != null) {
-                // TODO: guild icon with first letter
-                guildInfo = GuildInfo(event.guild.id, event.guild.name, event.guild.iconUrl!!, channel)
-            }
-        } else if (event.channelType === ChannelType.PRIVATE) {
+        if (event.channelType == ChannelType.PRIVATE) {
             guildInfo = GuildInfo(
                 event.privateChannel.id,
                 event.privateChannel.name,
                 getAvatarUrl(event.privateChannel.user),
                 channel
             )
+        } else {
+            // TODO: guild icon with first letter
+            guildInfo = GuildInfo(event.guild.id, event.guild.name, event.guild.iconUrl, channel)
         }
 
         if (guildInfo != null) {
