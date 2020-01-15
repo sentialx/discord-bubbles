@@ -16,8 +16,10 @@ import kotlinx.android.synthetic.main.chat_head_content.view.*
 import net.dv8tion.jda.api.entities.Message
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import net.dv8tion.jda.api.entities.ChannelType
+import net.dv8tion.jda.api.entities.User
 
 
 class Content(context: Context): LinearLayout(context) {
@@ -33,6 +35,8 @@ class Content(context: Context): LinearLayout(context) {
     private var lastMessageGroup: View? = null
 
     private var messagesView: RelativeLayout
+
+    private var avatarsCache = mutableMapOf<String, Bitmap>()
 
     init {
         inflate(context, R.layout.chat_head_content, this)
@@ -94,6 +98,10 @@ class Content(context: Context): LinearLayout(context) {
 
         Thread {
             chatHead.guildInfo.channel.instance.history.retrievePast(50).queue { result ->
+                for (message in result) {
+                    cacheAvatar(message.author)
+                }
+
                 runOnMainLoop {
                     val arr = result.reversed()
                     for (message in arr) {
@@ -151,6 +159,20 @@ class Content(context: Context): LinearLayout(context) {
         return appStatus
     }
 
+    fun cacheAvatar(user: User, cb: ((bitmap: Bitmap) -> Unit)? = null) {
+        if (avatarsCache[user.id] == null) {
+            Thread {
+                val bmp = fetchBitmap(getAvatarUrl(user))?.makeCircular()
+                if (bmp != null) {
+                    avatarsCache[user.id] = bmp
+                    if (cb != null) cb(bmp)
+                }
+            }.start()
+        } else if (cb != null) {
+            cb(avatarsCache[user.id]!!)
+        }
+    }
+
     fun addMessage(message: Message, scrollToBottom: Boolean = true) {
         val view: View
 
@@ -161,14 +183,10 @@ class Content(context: Context): LinearLayout(context) {
             val root: LinearLayout = view.findViewById(R.id.group_root)
             root.id = View.generateViewId()
 
-            Thread {
-                val bitmap = fetchBitmap(getAvatarUrl(message.author))?.makeCircular()
-
-                Handler(Looper.getMainLooper()).post {
-                    view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(bitmap)
-                }
-            }.start()
-
+            cacheAvatar(message.author) {
+                view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(it)
+            }
+           
             view.findViewById<TextView>(R.id.group_author).text = message.author.name
 
             val params = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
