@@ -1,5 +1,6 @@
 package com.sential.discordbubbles.chatheads
 
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.PixelFormat
@@ -53,6 +54,18 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
     }
 
     var messages = mutableListOf<MessageInfo>()
+
+    private var avatarsCache = mutableMapOf<String, Bitmap?>()
+
+    fun cacheAvatar(user: UserInfo): Bitmap? {
+        return if (avatarsCache[user.avatarId] == null) {
+            val bmp = fetchBitmap(user.avatarUrl)?.makeCircular()
+            avatarsCache[user.avatarId] = bmp
+            bmp
+        } else {
+            avatarsCache[user.avatarId]
+        }
+    }
 
     override fun onSpringEndStateChange(spring: Spring?) = Unit
     override fun onSpringAtRest(spring: Spring?) = Unit
@@ -114,7 +127,7 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
 
         Thread {
             for (info in infos) {
-                val bmp = fetchBitmap(info.author.avatarUrl)?.makeCircular()
+                val bmp = cacheAvatar(info.author)
                 runOnMainLoop {
                     info.author.avatarBitmap = bmp
                 }
