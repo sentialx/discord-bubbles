@@ -287,33 +287,34 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     fun add(guildInfo: GuildInfo): ChatHead {
         var chatHead = chatHeads.find { it.guildInfo.id == guildInfo.id }
 
-        if (chatHead != null) {
-            chatHead.notifications++
-            return chatHead
-        }
-
-        chatHeads.forEach {
-            it.visibility = View.VISIBLE
-        }
-
-        chatHead = ChatHead(this, guildInfo)
-        chatHeads.add(chatHead)
-
         val metrics = getScreenSize()
+
         var lx = metrics.widthPixels - CHAT_HEAD_SIZE - 16 + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
         var ly = 0.0
 
-        if (topChatHead != null) {
-            lx = topChatHead!!.springX.currentValue
-            ly = topChatHead!!.springY.currentValue
+        if (chatHead == null) {
+            chatHeads.forEach {
+                it.visibility = View.VISIBLE
+            }
+
+            chatHead = ChatHead(this, guildInfo)
+            chatHeads.add(chatHead)
+
+            if (topChatHead != null) {
+                lx = topChatHead!!.springX.currentValue
+                ly = topChatHead!!.springY.currentValue
+            }
+
+            setTop(chatHead)
+
+            chatHead.springX.currentValue = metrics.widthPixels.toDouble()
+            chatHead.springY.currentValue = ly
+
+            chatHead.springX.endValue = lx
+        } else {
+            chatHead.notifications++
+            setTop(chatHead)
         }
-
-        setTop(chatHead)
-
-        chatHead.springX.currentValue = metrics.widthPixels.toDouble()
-        chatHead.springY.currentValue = ly
-
-        chatHead.springX.endValue = lx
 
         if (!toggled) {
             blockAnim = true
