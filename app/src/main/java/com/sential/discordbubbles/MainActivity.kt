@@ -14,57 +14,38 @@ import android.webkit.PermissionRequest
 import com.sential.discordbubbles.client.Client
 import com.sential.discordbubbles.utils.runOnMainLoop
 import android.content.SharedPreferences
-import android.os.Handler
-import android.os.Looper
-import android.widget.ImageView
 import android.widget.Toast
-import com.sential.discordbubbles.utils.fetchBitmap
-import com.sential.discordbubbles.utils.getAvatarUrl
-import com.sential.discordbubbles.utils.makeCircular
-import android.app.ActivityManager
-import android.support.v4.app.SupportActivity
-import android.support.v4.app.SupportActivity.ExtraData
-import android.support.v4.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-
-
 
 val REQUEST_CODE = 5469
 
 class MainActivity : AppCompatActivity() {
-    var service: Intent? = null
-
     private lateinit var webView: WebView
 
     private lateinit var cookieManager: CookieManager
 
     private lateinit var prefs: SharedPreferences
 
+    private var token: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        service = Intent(this, OverlayService::class.java)
 
         val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
 
         if (!Settings.canDrawOverlays(this)) {
             startActivityForResult(intent, REQUEST_CODE)
-        } else if (!OverlayService.initialized) {
-            startService(service)
         }
 
         webView = findViewById(R.id.webview)
         prefs = getSharedPreferences("data", Context.MODE_PRIVATE)
 
-        if (OverlayService.initialized) return
-
-        val token = prefs.getString("token", null)
+        token = prefs.getString("token", null)
 
         if (token == null) {
             showLogin()
         } else {
-            login(token)
+            login()
             destroyWebView()
         }
     }
@@ -76,7 +57,7 @@ class MainActivity : AppCompatActivity() {
                 request: WebResourceRequest
             ): WebResourceResponse? {
                 if (request.url.toString() == "https://discordapp.com/api/v6/users/@me/library") {
-                    val token = request.requestHeaders.getValue("Authorization")
+                    token = request.requestHeaders.getValue("Authorization")
                     val editor = prefs.edit()
 
                     editor.putString("token", token)
@@ -88,7 +69,7 @@ class MainActivity : AppCompatActivity() {
                             Toast.LENGTH_LONG
                         ).show()
 
-                        login(token)
+                        login()
 
                         destroyWebView()
                     }
@@ -127,18 +108,18 @@ class MainActivity : AppCompatActivity() {
         (webView.parent as ViewGroup).removeView(webView)
     }
 
-    fun login(token: String?) {
-        if (token != null) {
-            Thread {
-                Client.login(token)
-            }.start()
+    fun login() {
+        if (token != null && !OverlayService.initialized) {
+            val service = Intent(this, OverlayService::class.java)
+            service.putExtra("token", token)
+            startService(service)
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_CODE && Settings.canDrawOverlays(this)) {
-            if (Settings.canDrawOverlays(this@MainActivity) && !OverlayService.initialized) {
-                startService(service)
+            if (Settings.canDrawOverlays(this@MainActivity)) {
+                login()
             }
         }
     }

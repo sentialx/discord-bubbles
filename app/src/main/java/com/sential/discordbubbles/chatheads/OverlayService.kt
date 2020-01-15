@@ -14,16 +14,18 @@ import android.os.Build
 import android.support.annotation.RequiresApi
 import android.widget.Toast
 import com.sential.discordbubbles.R
+import com.sential.discordbubbles.client.Client
 
 class OverlayService : Service() {
     companion object {
         lateinit var instance: OverlayService
         var initialized = false
-        var shouldShowToast = false
     }
 
     lateinit var windowManager: WindowManager
     lateinit var chatHeads: ChatHeads
+
+    var client: Client? = null
 
     private lateinit var innerReceiver: InnerReceiver
 
@@ -63,17 +65,6 @@ class OverlayService : Service() {
             .setContentIntent(pendingIntent).build()
 
         startForeground(101, notification)
-
-        if (shouldShowToast) {
-            onLogin()
-        }
-    }
-
-    fun onLogin() {
-        Toast.makeText(
-            this, "Logged in successfully",
-            Toast.LENGTH_LONG
-        ).show()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -88,6 +79,7 @@ class OverlayService : Service() {
     }
 
     override fun onDestroy() {
+        initialized = false
         unregisterReceiver(innerReceiver)
         super.onDestroy()
     }
@@ -97,6 +89,18 @@ class OverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent != null && client == null) {
+            val token = intent.extras?.getString("token")
+            if (token != null) {
+                client = Client(token) {
+                    Toast.makeText(
+                        this, "Logged in successfully",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
         return START_STICKY
     }
 }

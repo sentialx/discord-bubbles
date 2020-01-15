@@ -10,36 +10,19 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.SelfUser
 
-class Client(token: String) : ListenerAdapter() {
-    companion object {
-        lateinit var instance: Client
-        private var isInitialized = false
-
-        fun login(token: String): Client {
-            return Client(token)
-        }
-    }
-
-    var user: SelfUser
+class Client(token: String, onLogin: (() -> Unit)? = null) : ListenerAdapter() {
     val jda: JDA = JDABuilder(AccountType.CLIENT).setToken(token)
         .addEventListeners(this)
         .build()
 
     init {
-        instance = this
-        isInitialized = true
+        Thread {
+            jda.awaitReady()
 
-        user = jda.selfUser
-
-        jda.awaitReady()
-
-        if (OverlayService.initialized) {
             runOnMainLoop {
-                OverlayService.instance.onLogin()
+                if (onLogin != null) onLogin()
             }
-        } else {
-            OverlayService.shouldShowToast = true
-        }
+        }.start()
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
