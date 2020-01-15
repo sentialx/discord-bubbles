@@ -50,6 +50,12 @@ class Content(context: Context): LinearLayout(context) {
         messagesView.layoutManager = layoutManager
         messagesView.adapter = messagesAdapter
 
+        messagesView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+            if (layoutManager.findLastVisibleItemPosition() == messagesAdapter.messages.lastIndex) {
+                OverlayService.instance.chatHeads.activeChatHead?.notifications = 0
+            }
+        }
+
         val editText: EditText = findViewById(R.id.editText)
         val sendBtn: LinearLayout = findViewById(R.id.chat_send)
         val openExternalBtn: LinearLayout = findViewById(R.id.open_external)
