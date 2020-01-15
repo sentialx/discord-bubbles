@@ -47,7 +47,7 @@ class Client(token: String) : ListenerAdapter() {
 
         var guildInfo: GuildInfo? = null
 
-        val channel = event.channel
+        val channel = Channel(event.channel)
 
         if (event.channelType === ChannelType.TEXT) {
             if (event.guild.iconUrl != null) {
@@ -66,7 +66,7 @@ class Client(token: String) : ListenerAdapter() {
         if (guildInfo != null) {
             runOnMainLoop {
                 val chatHead = OverlayService.instance.chatHeads.add(guildInfo)
-                if (chatHead.guildInfo.isServer && chatHead.guildInfo.channel.id == msg.channel.id || chatHead.guildInfo.isPrivate) {
+                if (chatHead.guildInfo.channel.id == msg.channel.id || chatHead.guildInfo.channel.type == ChannelType.PRIVATE) {
                     if (OverlayService.instance.chatHeads.activeChatHead == chatHead) {
                         OverlayService.instance.chatHeads.content.addMessage(msg)
                     }

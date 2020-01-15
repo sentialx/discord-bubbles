@@ -50,7 +50,7 @@ class Content(context: Context): LinearLayout(context) {
         openExternalBtn.setOnClickListener {
             val bubble = OverlayService.instance.chatHeads.activeChatHead
             if (bubble != null) {
-                val scope = if (bubble.guildInfo.isPrivate) "@me" else bubble.guildInfo.id
+                val scope = if (bubble.guildInfo.channel.type == ChannelType.PRIVATE) "@me" else bubble.guildInfo.id
                 val url = "https://discordapp.com/channels/$scope/${bubble.guildInfo.channel.id}"
                 launchDiscord(url)
             }
@@ -60,7 +60,7 @@ class Content(context: Context): LinearLayout(context) {
             val bubble = OverlayService.instance.chatHeads.activeChatHead
             if (!editText.text.isNullOrEmpty()) {
                 // TODO: add mentioning users
-                bubble?.guildInfo?.channel?.sendMessage(editText.text)?.queue()
+                bubble?.guildInfo?.channel?.instance?.sendMessage(editText.text)?.queue()
                 editText.text.clear()
             }
         }
@@ -77,14 +77,14 @@ class Content(context: Context): LinearLayout(context) {
     }
 
     fun setInfo(chatHead: ChatHead) {
-        if (chatHead.guildInfo.isPrivate) {
+        if (chatHead.guildInfo.channel.type == ChannelType.PRIVATE) {
             atView.visibility = View.VISIBLE
             hashTagView.visibility = View.GONE
             channelView.text = chatHead.guildInfo.name
         } else {
             atView.visibility = View.GONE
             hashTagView.visibility = View.VISIBLE
-            channelView.text = chatHead.guildInfo.channel.name
+            channelView.text = chatHead.guildInfo.channel.instance.name
         }
 
         lastAuthorId = null
@@ -93,7 +93,7 @@ class Content(context: Context): LinearLayout(context) {
         messagesView.removeAllViews()
 
         Thread {
-            chatHead.guildInfo.channel.history.retrievePast(50).queue { result ->
+            chatHead.guildInfo.channel.instance.history.retrievePast(50).queue { result ->
                 runOnMainLoop {
                     val arr = result.reversed()
                     for (message in arr) {
