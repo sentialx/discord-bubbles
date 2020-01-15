@@ -21,6 +21,9 @@ import android.net.Uri
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.User
 
+class ListenableMessage(val message: Message) {
+    var onAvatarChange: ((it: Bitmap?) -> Unit)? = null
+}
 
 class Content(context: Context): LinearLayout(context) {
     private val springSystem = SpringSystem.create()
@@ -31,12 +34,12 @@ class Content(context: Context): LinearLayout(context) {
     private var atView: TextView
     private var scrollView: ScrollView
 
-    private var lastAuthorId: String? = null
+    private var lastAuthorName: String? = null
     private var lastMessageGroup: View? = null
 
     private var messagesView: RelativeLayout
 
-    private var avatarsCache = mutableMapOf<String, Bitmap>()
+    private var avatarsCache = mutableMapOf<String, Bitmap?>()
 
     init {
         inflate(context, R.layout.chat_head_content, this)
@@ -91,27 +94,15 @@ class Content(context: Context): LinearLayout(context) {
             channelView.text = chatHead.guildInfo.channel.instance.name
         }
 
-        lastAuthorId = null
+        lastAuthorName = null
         lastMessageGroup = null
 
         messagesView.removeAllViews()
 
         Thread {
             chatHead.guildInfo.channel.instance.history.retrievePast(50).queue { result ->
-                for (message in result) {
-                    cacheAvatar(message.author)
-                }
-
                 runOnMainLoop {
-                    val arr = result.reversed()
-                    for (message in arr) {
-                        addMessage(message, false)
-                    }
-                    scrollView.isSmoothScrollingEnabled = false
-                    scrollView.post {
-                        scrollView.fullScroll(ScrollView.FOCUS_DOWN)
-                        scrollView.isSmoothScrollingEnabled = true
-                    }
+                    addMessages(result)
                 }
             }
         }.start()
@@ -159,36 +150,60 @@ class Content(context: Context): LinearLayout(context) {
         return appStatus
     }
 
-    fun cacheAvatar(user: User, cb: ((bitmap: Bitmap) -> Unit)? = null) {
-        if (avatarsCache[user.id] == null) {
-            Thread {
-                val bmp = fetchBitmap(getAvatarUrl(user))?.makeCircular()
-                if (bmp != null) {
-                    avatarsCache[user.id] = bmp
-                    if (cb != null) cb(bmp)
-                }
-            }.start()
-        } else if (cb != null) {
-            cb(avatarsCache[user.id]!!)
+    fun cacheAvatar(user: User): Bitmap? {
+        val avatarUrl = getAvatarUrl(user)
+        return if (avatarsCache[avatarUrl] == null) {
+            val bmp = fetchBitmap(avatarUrl)?.makeCircular()
+            avatarsCache[avatarUrl] = bmp
+            bmp
+        } else {
+            avatarsCache[avatarUrl]
         }
     }
 
-    fun addMessage(message: Message, scrollToBottom: Boolean = true) {
+    fun addMessages(messages: List<Message>) {
+        val lms = ArrayList<ListenableMessage>()
+
+        val arr = messages.reversed()
+        for (message in arr) {
+            val lm = ListenableMessage(message)
+            val view = _addMessage(message, false)
+
+            lm.onAvatarChange = {
+                view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(it)
+            }
+
+            lms.add(lm)
+        }
+        scrollView.isSmoothScrollingEnabled = false
+        scrollView.post {
+            scrollView.fullScroll(ScrollView.FOCUS_DOWN)
+            scrollView.isSmoothScrollingEnabled = true
+        }
+
+        Thread {
+            for (lm in lms) {
+                val bmp = cacheAvatar(lm.message.author)
+                runOnMainLoop {
+                    lm.onAvatarChange?.let { it(bmp) }
+                }
+            }
+        }.start()
+    }
+
+    private fun _addMessage(message: Message, scrollToBottom: Boolean = true): View {
         val view: View
 
-        if (lastAuthorId != null && lastAuthorId == message.author.id && lastMessageGroup != null) {
+        if (lastAuthorName != null && lastAuthorName == message.author.name && lastMessageGroup != null) {
             view = lastMessageGroup!!
         } else {
             view = inflate(context, R.layout.message_group, null)
             val root: LinearLayout = view.findViewById(R.id.group_root)
             root.id = View.generateViewId()
 
-            cacheAvatar(message.author) {
-                runOnMainLoop {
-                    view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(it)
-                }
-            }
+            val avatarView = view.findViewById<ImageView>(R.id.group_avatar)
 
+            avatarView.setImageBitmap(avatarsCache[getAvatarUrl(message.author)])
             view.findViewById<TextView>(R.id.group_author).text = message.author.name
 
             val params = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
@@ -213,11 +228,29 @@ class Content(context: Context): LinearLayout(context) {
         messagesView.addView(messageView)
 
         lastMessageGroup = view
-        lastAuthorId = message.author.id
+        lastAuthorName = message.author.name
 
         if (scrollToBottom) {
             scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
         }
+
+        return view
+    }
+
+    fun addMessage(message: Message, scrollToBottom: Boolean = true) {
+        val lm = ListenableMessage(message)
+        val view = _addMessage(message, scrollToBottom)
+
+        lm.onAvatarChange = {
+            view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(it)
+        }
+
+        Thread {
+            val bmp = cacheAvatar(lm.message.author)
+            runOnMainLoop {
+                lm.onAvatarChange?.let { it(bmp) }
+            }
+        }.start()
     }
 
     fun hideContent() {
