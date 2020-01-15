@@ -129,7 +129,7 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
             adapter.notifyItemRangeInserted(startIndex, adapter.messages.lastIndex)
 
             if (lm.findLastVisibleItemPosition() >= startIndex - 1) {
-                chatHeads.content.messagesView.scrollToPosition(adapter.messages.lastIndex)
+                chatHeads.content.messagesView.smoothScrollToPosition(adapter.messages.lastIndex)
             }
         }
     }

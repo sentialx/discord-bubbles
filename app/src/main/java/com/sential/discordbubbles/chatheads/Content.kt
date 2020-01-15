@@ -112,6 +112,7 @@ class Content(context: Context): LinearLayout(context) {
 
         messagesAdapter.messages = chatHead.messages
         messagesAdapter.notifyDataSetChanged()
+        messagesView.scrollToPosition(messagesAdapter.messages.lastIndex)
     }
 
     fun launchDiscord(url: String) {
