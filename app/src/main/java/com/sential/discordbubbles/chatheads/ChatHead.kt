@@ -38,8 +38,9 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
 
     private var moving = false
 
-    private lateinit var notificationsTextView: TextView
-    private lateinit var notificationsView: LinearLayout
+    // TODO: move badge to right when necessary
+    private var notificationsTextView: TextView
+    private var notificationsView: LinearLayout
 
     var notifications = 0
     set(value) {
