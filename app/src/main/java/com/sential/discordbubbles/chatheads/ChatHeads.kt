@@ -195,7 +195,6 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         collapse()
                     }
                 }
-
             }
 
             return@setOnTouchListener false

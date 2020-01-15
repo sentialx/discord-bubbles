@@ -1,8 +1,6 @@
 package com.sential.discordbubbles.chatheads
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
@@ -14,10 +12,12 @@ import com.sential.discordbubbles.*
 import com.sential.discordbubbles.utils.*
 import kotlinx.android.synthetic.main.chat_head_content.view.*
 import net.dv8tion.jda.api.entities.Message
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
+import com.sential.discordbubbles.client.MessageInfo
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.User
 
@@ -32,14 +32,10 @@ class Content(context: Context): LinearLayout(context) {
     private var channelView: TextView
     private var hashTagView: TextView
     private var atView: TextView
-    private var scrollView: ScrollView
 
-    private var lastAuthorName: String? = null
-    private var lastMessageGroup: View? = null
-
-    private var messagesView: RelativeLayout
-
-    private var avatarsCache = mutableMapOf<String, Bitmap?>()
+    var messagesView: RecyclerView
+    var messagesAdapter = ChatAdapter(this.context, emptyList())
+    var layoutManager = LinearLayoutManager(context)
 
     init {
         inflate(context, R.layout.chat_head_content, this)
@@ -48,7 +44,11 @@ class Content(context: Context): LinearLayout(context) {
         hashTagView = findViewById(R.id.hashtag)
         atView = findViewById(R.id.at)
         messagesView = findViewById(R.id.messages)
-        scrollView = findViewById(R.id.scrollView)
+
+        layoutManager.stackFromEnd = true
+
+        messagesView.layoutManager = layoutManager
+        messagesView.adapter = messagesAdapter
 
         val editText: EditText = findViewById(R.id.editText)
         val sendBtn: LinearLayout = findViewById(R.id.chat_send)
@@ -94,18 +94,18 @@ class Content(context: Context): LinearLayout(context) {
             channelView.text = chatHead.guildInfo.channel.instance.name
         }
 
-        lastAuthorName = null
-        lastMessageGroup = null
-
-        messagesView.removeAllViews()
-
-        Thread {
-            chatHead.guildInfo.channel.instance.history.retrievePast(50).queue { result ->
-                runOnMainLoop {
-                    addMessages(result)
+        if (chatHead.messages.size == 0) {
+            Thread {
+                chatHead.guildInfo.channel.instance.history.retrievePast(50).queue { result ->
+                    runOnMainLoop {
+                        chatHead.addMessages(result.reversed())
+                    }
                 }
-            }
-        }.start()
+            }.start()
+        }
+
+        messagesAdapter.messages = chatHead.messages
+        messagesAdapter.notifyDataSetChanged()
     }
 
     fun launchDiscord(url: String) {
@@ -148,109 +148,6 @@ class Content(context: Context): LinearLayout(context) {
         }
 
         return appStatus
-    }
-
-    fun cacheAvatar(user: User): Bitmap? {
-        val avatarUrl = getAvatarUrl(user)
-        return if (avatarsCache[avatarUrl] == null) {
-            val bmp = fetchBitmap(avatarUrl)?.makeCircular()
-            avatarsCache[avatarUrl] = bmp
-            bmp
-        } else {
-            avatarsCache[avatarUrl]
-        }
-    }
-
-    fun addMessages(messages: List<Message>) {
-        val lms = ArrayList<ListenableMessage>()
-
-        val arr = messages.reversed()
-        for (message in arr) {
-            val lm = ListenableMessage(message)
-            val view = _addMessage(message, false)
-
-            lm.onAvatarChange = {
-                view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(it)
-            }
-
-            lms.add(lm)
-        }
-        scrollView.isSmoothScrollingEnabled = false
-        scrollView.post {
-            scrollView.fullScroll(ScrollView.FOCUS_DOWN)
-            scrollView.isSmoothScrollingEnabled = true
-        }
-
-        Thread {
-            for (lm in lms) {
-                val bmp = cacheAvatar(lm.message.author)
-                runOnMainLoop {
-                    lm.onAvatarChange?.let { it(bmp) }
-                }
-            }
-        }.start()
-    }
-
-    private fun _addMessage(message: Message, scrollToBottom: Boolean = true): View {
-        val view: View
-
-        if (lastAuthorName != null && lastAuthorName == message.author.name && lastMessageGroup != null) {
-            view = lastMessageGroup!!
-        } else {
-            view = inflate(context, R.layout.message_group, null)
-            val root: LinearLayout = view.findViewById(R.id.group_root)
-            root.id = View.generateViewId()
-
-            val avatarView = view.findViewById<ImageView>(R.id.group_avatar)
-
-            avatarView.setImageBitmap(avatarsCache[getAvatarUrl(message.author)])
-            view.findViewById<TextView>(R.id.group_author).text = message.author.name
-
-            val params = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
-
-            if (messagesView.childCount > 0) {
-                val prev = messagesView.getChildAt(messagesView.childCount - 1)
-                params.addRule(RelativeLayout.BELOW, prev.id)
-                root.layoutParams = params
-            } else {
-                params.topMargin = dpToPx(8f)
-                root.layoutParams = params
-            }
-
-            messages.addView(view)
-        }
-
-        val messagesView: LinearLayout = view.findViewById(R.id.group_messages)
-        val messageView = inflate(context, R.layout.message, null)
-
-        messageView.findViewById<TextView>(R.id.msg_body).text = message.contentRaw
-
-        messagesView.addView(messageView)
-
-        lastMessageGroup = view
-        lastAuthorName = message.author.name
-
-        if (scrollToBottom) {
-            scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
-        }
-
-        return view
-    }
-
-    fun addMessage(message: Message, scrollToBottom: Boolean = true) {
-        val lm = ListenableMessage(message)
-        val view = _addMessage(message, scrollToBottom)
-
-        lm.onAvatarChange = {
-            view.findViewById<ImageView>(R.id.group_avatar).setImageBitmap(it)
-        }
-
-        Thread {
-            val bmp = cacheAvatar(lm.message.author)
-            runOnMainLoop {
-                lm.onAvatarChange?.let { it(bmp) }
-            }
-        }.start()
     }
 
     fun hideContent() {

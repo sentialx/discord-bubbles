@@ -49,7 +49,7 @@ class Client(token: String, onLogin: (() -> Unit)? = null) : ListenerAdapter() {
                 val chatHead = OverlayService.instance.chatHeads.add(guildInfo)
                 if (chatHead.guildInfo.channel.id == msg.channel.id || chatHead.guildInfo.channel.type == ChannelType.PRIVATE) {
                     if (OverlayService.instance.chatHeads.activeChatHead == chatHead) {
-                        OverlayService.instance.chatHeads.content.addMessage(msg)
+                        chatHead.addMessage(msg)
                     }
                 }
             }

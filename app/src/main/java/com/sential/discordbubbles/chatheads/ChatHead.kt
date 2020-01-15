@@ -4,14 +4,12 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.view.*
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import com.facebook.rebound.*
 import com.sential.discordbubbles.R
 import com.sential.discordbubbles.client.*
 import com.sential.discordbubbles.utils.*
+import net.dv8tion.jda.api.entities.Message
 import kotlin.math.pow
 
 class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(chatHeads.context), View.OnTouchListener, SpringListener {
@@ -53,6 +51,8 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
             notificationsTextView.text = "$value"
         }
     }
+
+    var messages = mutableListOf<MessageInfo>()
 
     override fun onSpringEndStateChange(spring: Spring?) = Unit
     override fun onSpringAtRest(spring: Spring?) = Unit
@@ -101,6 +101,41 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
         guildInfo.onAvatarChange = {
             imageView.setImageBitmap(guildInfo.chatHeadBitmap)
         }
+    }
+
+    fun addMessages(msgs: List<Message>) {
+        val infos = ArrayList<MessageInfo>()
+
+        for (message in msgs) {
+            val info = MessageInfo(message)
+            infos.add(info)
+            messages.add(info)
+        }
+
+        Thread {
+            for (info in infos) {
+                val bmp = fetchBitmap(info.author.avatarUrl)?.makeCircular()
+                runOnMainLoop {
+                    info.author.avatarBitmap = bmp
+                }
+            }
+        }.start()
+
+        if (chatHeads.activeChatHead == this) {
+            val adapter = chatHeads.content.messagesAdapter
+            val lm = chatHeads.content.layoutManager
+            val startIndex = adapter.messages.lastIndex
+            adapter.messages = messages
+            adapter.notifyItemRangeInserted(startIndex, adapter.messages.lastIndex)
+
+            if (lm.findLastVisibleItemPosition() >= startIndex - 1) {
+                chatHeads.content.messagesView.smoothScrollToPosition(adapter.messages.lastIndex)
+            }
+        }
+    }
+
+    fun addMessage(msg: Message) {
+        addMessages(listOf(msg))
     }
 
     override fun onSpringUpdate(spring: Spring) {
