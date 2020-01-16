@@ -139,6 +139,15 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     private var verticalSpringChain: SpringChain? = null
 
     private var isOnRight = true
+    set(value) {
+        field = value
+
+        chatHeads.forEach{
+            val lp = it.notificationsView.layoutParams as LayoutParams
+            lp.gravity = if (value) Gravity.LEFT else Gravity.RIGHT
+            it.notificationsView.layoutParams = lp
+        }
+    }
 
     private var velocityTracker: VelocityTracker? = null
 
