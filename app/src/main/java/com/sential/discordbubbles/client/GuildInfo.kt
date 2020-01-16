@@ -5,6 +5,7 @@ import android.graphics.Color
 import com.sential.discordbubbles.chatheads.ChatHeads
 import com.sential.discordbubbles.chatheads.OverlayService
 import com.sential.discordbubbles.utils.*
+import net.dv8tion.jda.api.entities.MessageChannel
 
 class GuildInfo(val id: String, val name: String, avatarUrl: String?, val isPrivate: Boolean, var channelId: String) {
     var avatarUrl: String? = avatarUrl
@@ -24,7 +25,7 @@ class GuildInfo(val id: String, val name: String, avatarUrl: String?, val isPriv
 
         val jda = OverlayService.instance.client?.jda
         val arr = if (isPrivate) {
-            jda?.privateChannels?.map { Channel(it) }
+            listOf(Channel(jda?.privateChannels?.find { it.id == id } as MessageChannel))
         } else {
             jda?.getGuildById(id)?.textChannels?.map { Channel(it) }
         }
