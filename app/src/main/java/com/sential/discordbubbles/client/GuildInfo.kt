@@ -3,6 +3,7 @@ package com.sential.discordbubbles.client
 import android.graphics.Bitmap
 import android.graphics.Color
 import com.sential.discordbubbles.chatheads.ChatHeads
+import com.sential.discordbubbles.chatheads.OverlayService
 import com.sential.discordbubbles.utils.*
 
 class GuildInfo(val id: String, val name: String, avatarUrl: String?, val channel: Channel) {
@@ -19,6 +20,8 @@ class GuildInfo(val id: String, val name: String, avatarUrl: String?, val channe
     init {
         this.avatarUrl = avatarUrl
     }
+
+    val channels = OverlayService.instance.client?.jda?.getGuildById(id)?.textChannels?.map { Channel(it) }
 
     var onAvatarChange: (() -> Unit)? = null
 

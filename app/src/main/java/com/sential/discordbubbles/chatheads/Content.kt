@@ -10,20 +10,12 @@ import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringSystem
 import com.sential.discordbubbles.*
 import com.sential.discordbubbles.utils.*
-import kotlinx.android.synthetic.main.chat_head_content.view.*
-import net.dv8tion.jda.api.entities.Message
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.net.Uri
+import android.support.design.widget.NavigationView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import com.sential.discordbubbles.client.MessageInfo
 import net.dv8tion.jda.api.entities.ChannelType
-import net.dv8tion.jda.api.entities.User
-
-class ListenableMessage(val message: Message) {
-    var onAvatarChange: ((it: Bitmap?) -> Unit)? = null
-}
 
 class Content(context: Context): LinearLayout(context) {
     private val springSystem = SpringSystem.create()
@@ -33,6 +25,7 @@ class Content(context: Context): LinearLayout(context) {
     private var hashTagView: TextView
     private var atView: TextView
 
+    var menu: NavigationView
     var messagesView: RecyclerView
     var messagesAdapter = ChatAdapter(this.context, emptyList())
     var layoutManager = LinearLayoutManager(context)
@@ -44,6 +37,7 @@ class Content(context: Context): LinearLayout(context) {
         hashTagView = findViewById(R.id.hashtag)
         atView = findViewById(R.id.at)
         messagesView = findViewById(R.id.messages)
+        menu = findViewById(R.id.navigation)
 
         layoutManager.stackFromEnd = true
 
@@ -114,6 +108,11 @@ class Content(context: Context): LinearLayout(context) {
         messagesAdapter.messages = chatHead.messages
         messagesAdapter.notifyDataSetChanged()
         messagesView.scrollToPosition(messagesAdapter.messages.lastIndex)
+
+        menu.menu.clear()
+        chatHead.guildInfo.channels?.forEach {
+            menu.menu.add("# ${it.instance.name}")
+        }
     }
 
     fun launchDiscord(url: String) {
