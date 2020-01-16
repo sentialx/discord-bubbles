@@ -309,8 +309,6 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             chatHead = ChatHead(this, guildInfo)
             chatHeads.add(chatHead)
-        } else {
-            chatHead.notifications++
         }
 
         if (topChatHead != null) {
@@ -602,8 +600,6 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                         OverlayService.instance.windowManager.updateViewLayout(this, params)
 
                         activeChatHead = topChatHead
-
-                        activeChatHead?.notifications = 0
 
                         updateActiveContent()
 

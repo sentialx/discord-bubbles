@@ -71,7 +71,9 @@ class Content(context: Context): LinearLayout(context) {
 
         messagesView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
             if (layoutManager.findLastVisibleItemPosition() == messagesAdapter.messages.lastIndex) {
-                OverlayService.instance.chatHeads.activeChatHead?.notifications = 0
+                val bubble = OverlayService.instance.chatHeads.activeChatHead
+                bubble?.guildInfo?.channel?.notifications = 0
+                bubble?.updateNotifications()
             }
         }
 

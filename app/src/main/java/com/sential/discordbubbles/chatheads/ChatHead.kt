@@ -94,11 +94,13 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
 
         imageView.setImageBitmap(guildInfo.chatHeadBitmap)
 
-        notifications = 1
-
         guildInfo.onAvatarChange = {
             imageView.setImageBitmap(guildInfo.chatHeadBitmap)
         }
+    }
+
+    fun updateNotifications() {
+        notifications = guildInfo.channels.sumBy { it.notifications }
     }
 
     override fun onSpringUpdate(spring: Spring) {
@@ -129,7 +131,6 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
                         chatHeads.collapse()
                     } else {
                         chatHeads.activeChatHead = currentChatHead
-                        currentChatHead.notifications = 0
                         chatHeads.updateActiveContent()
                     }
                 } else {

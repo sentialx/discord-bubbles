@@ -47,7 +47,8 @@ class Client(token: String, onLogin: (() -> Unit)? = null) : ListenerAdapter() {
 
         runOnMainLoop {
             val chatHead = OverlayService.instance.chatHeads.add(guildInfo)
-            chatHead.guildInfo.channel?.addMessage(msg)
+            chatHead.guildInfo.channels.find { it.id == event.channel.id }?.addMessage(msg)
+            chatHead.updateNotifications()
         }
     }
 }

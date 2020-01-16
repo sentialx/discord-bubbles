@@ -26,6 +26,8 @@ class Channel(messageChannel: MessageChannel) {
 
     var baseHistoryLoaded = false
 
+    var notifications: Int = 0
+
     var messages = mutableListOf<MessageInfo>()
 
     private var avatarsCache = mutableMapOf<String, Bitmap?>()
@@ -47,6 +49,8 @@ class Channel(messageChannel: MessageChannel) {
     }
 
     fun addMessages(msgs: List<Message>) {
+        notifications += msgs.size
+
         if (!baseHistoryLoaded) return
 
         val infos = ArrayList<MessageInfo>()
