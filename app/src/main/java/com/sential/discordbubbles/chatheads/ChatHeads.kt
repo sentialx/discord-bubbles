@@ -286,6 +286,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
     fun add(guildInfo: GuildInfo): ChatHead {
         var chatHead = chatHeads.find { it.guildInfo.id == guildInfo.id }
+        val newChatHead = chatHead == null
 
         val metrics = getScreenSize()
 
@@ -304,24 +305,27 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
                 lx = topChatHead!!.springX.currentValue
                 ly = topChatHead!!.springY.currentValue
             }
+        } else {
+            chatHead.notifications++
+        }
 
-            setTop(chatHead)
+        setTop(chatHead)
 
+        if (newChatHead) {
             chatHead.springX.currentValue = metrics.widthPixels.toDouble()
             chatHead.springY.currentValue = ly
 
             chatHead.springX.endValue = lx
-        } else {
-            chatHead.notifications++
-            setTop(chatHead)
         }
 
         if (!toggled) {
             blockAnim = true
 
-            chatHeads.forEachIndexed { index, element ->
-                element.springX.currentValue = lx + index * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
-                element.springY.currentValue = ly
+            if (newChatHead) {
+                chatHeads.forEachIndexed { index, element ->
+                    element.springX.currentValue = lx + index * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
+                    element.springY.currentValue = ly
+                }
             }
 
             motionTrackerParams.x = chatHead.springX.currentValue.toInt()
