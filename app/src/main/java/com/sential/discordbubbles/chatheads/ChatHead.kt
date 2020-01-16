@@ -1,17 +1,17 @@
 package com.sential.discordbubbles.chatheads
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.PixelFormat
 import android.view.*
 import android.widget.*
 import com.facebook.rebound.*
-import com.sential.discordbubbles.R
 import com.sential.discordbubbles.client.*
 import com.sential.discordbubbles.utils.*
-import net.dv8tion.jda.api.entities.Message
 import kotlin.math.pow
+import android.text.Spannable
+import android.text.style.ForegroundColorSpan
+import android.text.SpannableString
+import android.graphics.*
+import com.sential.discordbubbles.R
+
 
 class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(chatHeads.context), View.OnTouchListener, SpringListener {
     var params: WindowManager.LayoutParams = WindowManager.LayoutParams(
@@ -101,6 +101,32 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
 
     fun updateNotifications() {
         notifications = guildInfo.channels.sumBy { it.notifications }
+
+        if (chatHeads.activeChatHead == this) {
+            val navView = chatHeads.content.navigationView
+            for (i in 0 until navView.menu.size()) {
+                val item = navView.menu.getItem(i)
+                item.title = item.title.toString()
+            }
+
+            guildInfo.channels.forEach {
+                if (it.notifications > 0) {
+                    val id = chatHeads.content.channelIdToMenuIdMap[it.id]
+                    if (id != null) {
+                        val item = navView.menu.getItem(id)
+
+                        val mNewTitle = SpannableString(item.title)
+                        mNewTitle.setSpan(
+                            ForegroundColorSpan(Color.WHITE),
+                            0,
+                            mNewTitle.length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        item.title = mNewTitle
+                    }
+                }
+            }
+        }
     }
 
     override fun onSpringUpdate(spring: Spring) {

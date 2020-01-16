@@ -38,6 +38,7 @@ class Content(context: Context): LinearLayout(context) {
     var menuBtn: LinearLayout
 
     val idToChannelIdMap = mutableMapOf<Int, String>()
+    val channelIdToMenuIdMap = mutableMapOf<String, Int>()
 
     init {
         inflate(context, R.layout.chat_head_content, this)
@@ -157,6 +158,7 @@ class Content(context: Context): LinearLayout(context) {
             item.isCheckable = true
             if (chatHead.guildInfo.channelId == it.id) item.isChecked = true
             idToChannelIdMap[index] = it.id
+            channelIdToMenuIdMap[it.id] = index
         }
     }
 
