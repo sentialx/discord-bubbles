@@ -100,7 +100,7 @@ class Content(context: Context): LinearLayout(context) {
             channelView.text = chatHead.guildInfo.channel.instance.name
         }
 
-        if (chatHead.messages.size == 0) {
+        if (!chatHead.baseHistoryLoaded) {
             Thread {
                 chatHead.guildInfo.channel.instance.history.retrievePast(50).queue { result ->
                     runOnMainLoop {
@@ -108,6 +108,7 @@ class Content(context: Context): LinearLayout(context) {
                     }
                 }
             }.start()
+            chatHead.baseHistoryLoaded = true
         }
 
         messagesAdapter.messages = chatHead.messages

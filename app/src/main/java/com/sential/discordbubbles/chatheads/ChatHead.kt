@@ -41,6 +41,8 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
     private var notificationsTextView: TextView
     private var notificationsView: LinearLayout
 
+    var baseHistoryLoaded = false
+
     var notifications = 0
     set(value) {
         if (value >= 0) field = value
@@ -116,7 +118,15 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
         }
     }
 
+    fun clearMessages() {
+        val adapter = chatHeads.content.messagesAdapter
+        adapter.messages = emptyList()
+        adapter.notifyDataSetChanged()
+    }
+
     fun addMessages(msgs: List<Message>) {
+        if (!baseHistoryLoaded) return
+
         val infos = ArrayList<MessageInfo>()
 
         for (message in msgs) {
