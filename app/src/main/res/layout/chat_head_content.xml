@@ -26,14 +26,29 @@
                 android:background="@drawable/toolbar_bg"
                 android:clipToPadding="false"
                 android:elevation="8dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
                 android:orientation="horizontal">
+            <LinearLayout
+                    android:id="@+id/menu_btn"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center">
+                <ImageView
+                        android:layout_width="24dp"
+                        android:layout_marginLeft="2dp"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_menu_black_24dp"
+                        android:alpha="0.54"
+                        />
+            </LinearLayout>
             <LinearLayout
                     android:layout_gravity="center_vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:layout_marginStart="8dp"
                     android:orientation="vertical">
                 <LinearLayout
                         android:orientation="horizontal"

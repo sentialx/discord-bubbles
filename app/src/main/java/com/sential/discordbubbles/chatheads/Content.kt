@@ -16,6 +16,7 @@ import android.support.design.widget.NavigationView
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.Gravity
 import com.sential.discordbubbles.client.Channel
 import net.dv8tion.jda.api.entities.ChannelType
 
@@ -31,8 +32,10 @@ class Content(context: Context): LinearLayout(context) {
     var messagesAdapter = ChatAdapter(this.context, emptyList())
     var layoutManager = LinearLayoutManager(context)
 
-    var menu: NavigationView
+    var navigationView: NavigationView
     var drawerLayout: DrawerLayout
+
+    var menuBtn: LinearLayout
 
     val idToChannelIdMap = mutableMapOf<Int, String>()
 
@@ -43,15 +46,16 @@ class Content(context: Context): LinearLayout(context) {
         hashTagView = findViewById(R.id.hashtag)
         atView = findViewById(R.id.at)
         messagesView = findViewById(R.id.messages)
-        menu = findViewById(R.id.navigation)
+        navigationView = findViewById(R.id.navigation)
         drawerLayout = findViewById(R.id.drawer)
+        menuBtn = findViewById(R.id.menu_btn)
 
         layoutManager.stackFromEnd = true
 
         messagesView.layoutManager = layoutManager
         messagesView.adapter = messagesAdapter
 
-        menu.setNavigationItemSelectedListener {
+        navigationView.setNavigationItemSelectedListener {
             val id = idToChannelIdMap[it.itemId]!!
             val chatHead = OverlayService.instance.chatHeads.activeChatHead!!
 
@@ -93,6 +97,10 @@ class Content(context: Context): LinearLayout(context) {
             }
         }
 
+        menuBtn.setOnClickListener {
+            drawerLayout.openDrawer(Gravity.START)
+        }
+
         scaleSpring.addListener(object : SimpleSpringListener() {
             override fun onSpringUpdate(spring: Spring) {
                 scaleX = spring.currentValue.toFloat()
@@ -109,10 +117,12 @@ class Content(context: Context): LinearLayout(context) {
             atView.visibility = View.VISIBLE
             hashTagView.visibility = View.GONE
             channelView.text = chatHead.guildInfo.name
+            menuBtn.visibility = View.GONE
         } else {
             atView.visibility = View.GONE
             hashTagView.visibility = View.VISIBLE
             channelView.text = chatHead.guildInfo.channel?.instance?.name
+            menuBtn.visibility = View.VISIBLE
         }
 
         val channel = chatHead.guildInfo.channel!!
@@ -134,10 +144,10 @@ class Content(context: Context): LinearLayout(context) {
 
     fun updateNavigationDrawer(chatHead: ChatHead) {
         idToChannelIdMap.clear()
-        menu.menu.clear()
+        navigationView.menu.clear()
 
         chatHead.guildInfo.channels.forEachIndexed { index, it ->
-            val item = menu.menu.add(0, index, index, "# ${it.instance.name}")
+            val item = navigationView.menu.add(0, index, index, "# ${it.instance.name}")
             item.isCheckable = true
             if (chatHead.guildInfo.channelId == it.id) item.isChecked = true
             idToChannelIdMap[index] = it.id
