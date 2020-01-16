@@ -119,12 +119,13 @@ class Content(context: Context): LinearLayout(context) {
             channelView.text = chatHead.guildInfo.name
             menuBtn.visibility = View.GONE
             navigationView.visibility = View.GONE
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         } else {
             atView.visibility = View.GONE
             hashTagView.visibility = View.VISIBLE
             channelView.text = chatHead.guildInfo.channel?.instance?.name
             menuBtn.visibility = View.VISIBLE
-            navigationView.visibility = View.VISIBLE
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
             navigationView.getHeaderView(0).findViewById<TextView>(R.id.guild_name).text = chatHead.guildInfo.name
         }
 
