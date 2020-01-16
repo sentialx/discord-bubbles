@@ -13,6 +13,7 @@ import com.sential.discordbubbles.utils.*
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.support.design.widget.NavigationView
+import android.support.v4.widget.DrawerLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import com.sential.discordbubbles.client.Channel
@@ -26,10 +27,12 @@ class Content(context: Context): LinearLayout(context) {
     private var hashTagView: TextView
     private var atView: TextView
 
-    var menu: NavigationView
     var messagesView: RecyclerView
     var messagesAdapter = ChatAdapter(this.context, emptyList())
     var layoutManager = LinearLayoutManager(context)
+
+    var menu: NavigationView
+    var drawerLayout: DrawerLayout
 
     val idToChannelIdMap = mutableMapOf<Int, String>()
 
@@ -41,6 +44,7 @@ class Content(context: Context): LinearLayout(context) {
         atView = findViewById(R.id.at)
         messagesView = findViewById(R.id.messages)
         menu = findViewById(R.id.navigation)
+        drawerLayout = findViewById(R.id.drawer)
 
         layoutManager.stackFromEnd = true
 
@@ -55,6 +59,8 @@ class Content(context: Context): LinearLayout(context) {
 
             chatHead.guildInfo.channelId = id
             setInfo(chatHead)
+
+            drawerLayout.closeDrawers()
 
             true
         }
@@ -185,6 +191,8 @@ class Content(context: Context): LinearLayout(context) {
             OverlayService.instance.chatHeads.showContentRunnable)
 
         scaleSpring.endValue = 0.0
+
+        drawerLayout.closeDrawers()
 
         val anim = AlphaAnimation(1.0f, 0.0f)
         anim.duration = 200
