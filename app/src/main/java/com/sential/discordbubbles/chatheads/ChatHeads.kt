@@ -300,13 +300,13 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             chatHead = ChatHead(this, guildInfo)
             chatHeads.add(chatHead)
-
-            if (topChatHead != null) {
-                lx = topChatHead!!.springX.currentValue
-                ly = topChatHead!!.springY.currentValue
-            }
         } else {
             chatHead.notifications++
+        }
+
+        if (topChatHead != null) {
+            lx = topChatHead!!.springX.currentValue
+            ly = topChatHead!!.springY.currentValue
         }
 
         setTop(chatHead)
@@ -321,11 +321,9 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
         if (!toggled) {
             blockAnim = true
 
-            if (newChatHead) {
-                chatHeads.forEachIndexed { index, element ->
-                    element.springX.currentValue = lx + index * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
-                    element.springY.currentValue = ly
-                }
+            chatHeads.forEachIndexed { index, element ->
+                element.springX.currentValue = lx + index * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
+                element.springY.currentValue = ly
             }
 
             motionTrackerParams.x = chatHead.springX.currentValue.toInt()
