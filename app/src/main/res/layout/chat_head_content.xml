@@ -144,6 +144,7 @@
                 android:background="@color/background"
                 app:menu="@menu/channels_menu"
                 app:itemTextColor="#80FFFFFF"
+                app:itemBackground="@drawable/menu_item_bg"
                 android:theme="@style/NavigationTheme"
                 android:layout_height="match_parent"
                 android:layout_gravity="start"/>

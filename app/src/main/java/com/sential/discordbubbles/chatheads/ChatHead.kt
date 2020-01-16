@@ -40,8 +40,6 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
     private var notificationsTextView: TextView
     var notificationsView: LinearLayout
 
-    var baseHistoryLoaded = false
-
     var notifications = 0
     set(value) {
         if (value >= 0) field = value
@@ -51,20 +49,6 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
         } else if (value > 0) {
             notificationsView.visibility = VISIBLE
             notificationsTextView.text = "$value"
-        }
-    }
-
-    var messages = mutableListOf<MessageInfo>()
-
-    private var avatarsCache = mutableMapOf<String, Bitmap?>()
-
-    fun cacheAvatar(user: UserInfo): Bitmap? {
-        return if (avatarsCache[user.avatarId] == null) {
-            val bmp = fetchBitmap(user.avatarUrl)?.makeCircular()
-            avatarsCache[user.avatarId] = bmp
-            bmp
-        } else {
-            avatarsCache[user.avatarId]
         }
     }
 
@@ -115,49 +99,6 @@ class ChatHead(var chatHeads: ChatHeads, var guildInfo: GuildInfo): FrameLayout(
         guildInfo.onAvatarChange = {
             imageView.setImageBitmap(guildInfo.chatHeadBitmap)
         }
-    }
-
-    fun clearMessages() {
-        val adapter = chatHeads.content.messagesAdapter
-        adapter.messages = emptyList()
-        adapter.notifyDataSetChanged()
-    }
-
-    fun addMessages(msgs: List<Message>) {
-        if (!baseHistoryLoaded) return
-
-        val infos = ArrayList<MessageInfo>()
-
-        for (message in msgs) {
-            val info = MessageInfo(message)
-            infos.add(info)
-            messages.add(info)
-        }
-
-        Thread {
-            for (info in infos) {
-                val bmp = cacheAvatar(info.author)
-                runOnMainLoop {
-                    info.author.avatarBitmap = bmp
-                }
-            }
-        }.start()
-
-        if (chatHeads.activeChatHead == this) {
-            val adapter = chatHeads.content.messagesAdapter
-            val lm = chatHeads.content.layoutManager
-            val startIndex = adapter.messages.lastIndex
-            adapter.messages = messages
-            adapter.notifyItemRangeInserted(startIndex, adapter.messages.lastIndex)
-
-            if (lm.findLastVisibleItemPosition() >= startIndex - 1) {
-                chatHeads.content.messagesView.smoothScrollToPosition(adapter.messages.lastIndex)
-            }
-        }
-    }
-
-    fun addMessage(msg: Message) {
-        addMessages(listOf(msg))
     }
 
     override fun onSpringUpdate(spring: Spring) {

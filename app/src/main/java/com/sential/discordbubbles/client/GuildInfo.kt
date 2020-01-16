@@ -6,7 +6,7 @@ import com.sential.discordbubbles.chatheads.ChatHeads
 import com.sential.discordbubbles.chatheads.OverlayService
 import com.sential.discordbubbles.utils.*
 
-class GuildInfo(val id: String, val name: String, avatarUrl: String?, val channel: Channel) {
+class GuildInfo(val id: String, val name: String, avatarUrl: String?, val isPrivate: Boolean, var channelId: String) {
     var avatarUrl: String? = avatarUrl
         set(value) {
             field = value
@@ -17,11 +17,23 @@ class GuildInfo(val id: String, val name: String, avatarUrl: String?, val channe
             }
         }
 
+    var channels: List<Channel> = emptyList()
+
     init {
         this.avatarUrl = avatarUrl
+
+        val jda = OverlayService.instance.client?.jda
+        val arr = if (isPrivate) {
+            jda?.privateChannels?.map { Channel(it) }
+        } else {
+            jda?.getGuildById(id)?.textChannels?.map { Channel(it) }
+        }
+
+        if (arr != null) channels = arr
     }
 
-    val channels = OverlayService.instance.client?.jda?.getGuildById(id)?.textChannels?.map { Channel(it) }
+    val channel: Channel?
+    get() = channels.find { it.id == channelId }
 
     var onAvatarChange: (() -> Unit)? = null
 

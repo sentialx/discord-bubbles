@@ -380,6 +380,7 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
     fun updateActiveContent() {
         if (activeChatHead == null) return
         content.setInfo(activeChatHead!!)
+        content.updateNavigationDrawer(activeChatHead!!)
     }
 
     private fun onClose() {

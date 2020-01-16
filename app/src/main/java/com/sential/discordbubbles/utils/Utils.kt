@@ -42,3 +42,7 @@ fun getAvatarUrl(user: User): String {
         user.defaultAvatarUrl
     }
 }
+
+fun debug(txt: String) {
+    println("asdf: $txt")
+}

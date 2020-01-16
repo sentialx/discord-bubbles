@@ -15,6 +15,7 @@ import android.net.Uri
 import android.support.design.widget.NavigationView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import com.sential.discordbubbles.client.Channel
 import net.dv8tion.jda.api.entities.ChannelType
 
 class Content(context: Context): LinearLayout(context) {
@@ -30,6 +31,8 @@ class Content(context: Context): LinearLayout(context) {
     var messagesAdapter = ChatAdapter(this.context, emptyList())
     var layoutManager = LinearLayoutManager(context)
 
+    val idToChannelIdMap = mutableMapOf<Int, String>()
+
     init {
         inflate(context, R.layout.chat_head_content, this)
 
@@ -44,6 +47,18 @@ class Content(context: Context): LinearLayout(context) {
         messagesView.layoutManager = layoutManager
         messagesView.adapter = messagesAdapter
 
+        menu.setNavigationItemSelectedListener {
+            val id = idToChannelIdMap[it.itemId]!!
+            val chatHead = OverlayService.instance.chatHeads.activeChatHead!!
+
+            it.isChecked = true
+
+            chatHead.guildInfo.channelId = id
+            setInfo(chatHead)
+
+            true
+        }
+
         messagesView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
             if (layoutManager.findLastVisibleItemPosition() == messagesAdapter.messages.lastIndex) {
                 OverlayService.instance.chatHeads.activeChatHead?.notifications = 0
@@ -57,8 +72,8 @@ class Content(context: Context): LinearLayout(context) {
         openExternalBtn.setOnClickListener {
             val bubble = OverlayService.instance.chatHeads.activeChatHead
             if (bubble != null) {
-                val scope = if (bubble.guildInfo.channel.type == ChannelType.PRIVATE) "@me" else bubble.guildInfo.id
-                val url = "https://discordapp.com/channels/$scope/${bubble.guildInfo.channel.id}"
+                val scope = if (bubble.guildInfo.channel?.type == ChannelType.PRIVATE) "@me" else bubble.guildInfo.id
+                val url = "https://discordapp.com/channels/$scope/${bubble.guildInfo.channel?.id}"
                 launchDiscord(url)
             }
         }
@@ -84,34 +99,42 @@ class Content(context: Context): LinearLayout(context) {
     }
 
     fun setInfo(chatHead: ChatHead) {
-        if (chatHead.guildInfo.channel.type == ChannelType.PRIVATE) {
+        if (chatHead.guildInfo.channel?.type == ChannelType.PRIVATE) {
             atView.visibility = View.VISIBLE
             hashTagView.visibility = View.GONE
             channelView.text = chatHead.guildInfo.name
         } else {
             atView.visibility = View.GONE
             hashTagView.visibility = View.VISIBLE
-            channelView.text = chatHead.guildInfo.channel.instance.name
+            channelView.text = chatHead.guildInfo.channel?.instance?.name
         }
 
-        if (!chatHead.baseHistoryLoaded) {
+        val channel = chatHead.guildInfo.channel!!
+        if (!channel.baseHistoryLoaded) {
             Thread {
-                chatHead.guildInfo.channel.instance.history.retrievePast(50).queue { result ->
+                chatHead.guildInfo.channel?.instance?.history?.retrievePast(50)?.queue { result ->
                     runOnMainLoop {
-                        chatHead.addMessages(result.reversed())
+                        channel.addMessages(result.reversed())
                     }
                 }
             }.start()
-            chatHead.baseHistoryLoaded = true
+            channel.baseHistoryLoaded = true
         }
 
-        messagesAdapter.messages = chatHead.messages
+        messagesAdapter.messages = channel.messages
         messagesAdapter.notifyDataSetChanged()
         messagesView.scrollToPosition(messagesAdapter.messages.lastIndex)
+    }
 
+    fun updateNavigationDrawer(chatHead: ChatHead) {
+        idToChannelIdMap.clear()
         menu.menu.clear()
-        chatHead.guildInfo.channels?.forEach {
-            menu.menu.add("# ${it.instance.name}")
+
+        chatHead.guildInfo.channels.forEachIndexed { index, it ->
+            val item = menu.menu.add(0, index, index, "# ${it.instance.name}")
+            item.isCheckable = true
+            if (chatHead.guildInfo.channelId == it.id) item.isChecked = true
+            idToChannelIdMap[index] = it.id
         }
     }
 

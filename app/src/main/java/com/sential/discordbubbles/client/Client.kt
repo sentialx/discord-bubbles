@@ -28,7 +28,7 @@ class Client(token: String, onLogin: (() -> Unit)? = null) : ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val msg = event.message
 
-        var guildInfo: GuildInfo? = null
+        val guildInfo: GuildInfo
 
         val channel = Channel(event.channel)
 
@@ -37,21 +37,17 @@ class Client(token: String, onLogin: (() -> Unit)? = null) : ListenerAdapter() {
                 event.privateChannel.id,
                 event.privateChannel.name,
                 getAvatarUrl(event.privateChannel.user),
-                channel
+                true,
+                channel.id
             )
         } else {
             // TODO: guild icon with first letter
-            guildInfo = GuildInfo(event.guild.id, event.guild.name, event.guild.iconUrl, channel)
+            guildInfo = GuildInfo(event.guild.id, event.guild.name, event.guild.iconUrl, false, channel.id)
         }
 
-        if (guildInfo != null) {
-            runOnMainLoop {
-                val chatHead = OverlayService.instance.chatHeads.add(guildInfo)
-                if (chatHead.guildInfo.channel.id == msg.channel.id || chatHead.guildInfo.channel.type == ChannelType.PRIVATE) {
-                    chatHead.addMessage(msg)
-                }
-            }
+        runOnMainLoop {
+            val chatHead = OverlayService.instance.chatHeads.add(guildInfo)
+            chatHead.guildInfo.channel?.addMessage(msg)
         }
-
     }
 }
