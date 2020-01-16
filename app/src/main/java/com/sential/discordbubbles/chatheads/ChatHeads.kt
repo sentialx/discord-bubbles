@@ -311,15 +311,8 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
         setTop(chatHead)
 
-        if (newChatHead) {
-            chatHead.springX.currentValue = metrics.widthPixels.toDouble()
-            chatHead.springY.currentValue = ly
-
-            chatHead.springX.endValue = lx
-        }
-
         if (!toggled) {
-            blockAnim = true
+            if (!moving) blockAnim = true
 
             chatHeads.forEachIndexed { index, element ->
                 element.springX.currentValue = lx + index * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
@@ -332,6 +325,13 @@ class ChatHeads(context: Context) : View.OnTouchListener, FrameLayout(context) {
 
             OverlayService.instance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
         } else {
+            if (newChatHead) {
+                chatHead.springX.currentValue = metrics.widthPixels.toDouble()
+                chatHead.springY.currentValue = ly
+
+                chatHead.springX.endValue = lx
+            }
+
             animatingChatHeadInExpandedView = true
             rearrangeExpanded(true)
         }
