@@ -118,11 +118,14 @@ class Content(context: Context): LinearLayout(context) {
             hashTagView.visibility = View.GONE
             channelView.text = chatHead.guildInfo.name
             menuBtn.visibility = View.GONE
+            navigationView.visibility = View.GONE
         } else {
             atView.visibility = View.GONE
             hashTagView.visibility = View.VISIBLE
             channelView.text = chatHead.guildInfo.channel?.instance?.name
             menuBtn.visibility = View.VISIBLE
+            navigationView.visibility = View.VISIBLE
+            navigationView.getHeaderView(0).findViewById<TextView>(R.id.guild_name).text = chatHead.guildInfo.name
         }
 
         val channel = chatHead.guildInfo.channel!!
