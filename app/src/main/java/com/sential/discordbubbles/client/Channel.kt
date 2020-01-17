@@ -78,7 +78,7 @@ class Channel(messageChannel: MessageChannel) {
             adapter.messages = messages
             adapter.notifyItemRangeInserted(startIndex, adapter.messages.lastIndex)
 
-            if (lm.findLastVisibleItemPosition() >= startIndex - 1) {
+            if (lm.findLastVisibleItemPosition() >= startIndex - 1 && adapter.messages.lastIndex >= 0) {
                 chatHeads.content.messagesView.smoothScrollToPosition(adapter.messages.lastIndex)
             }
         }
