@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
                     runOnMainLoop {
                         Toast.makeText(
-                            OverlayService.instance, "Obtained token, logging in...",
+                            this@MainActivity, "Obtained token, logging in...",
                             Toast.LENGTH_LONG
                         ).show()
 
@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun login() {
-        if (token != null && !OverlayService.initialized) {
+        if (token != null && !OverlayService.initialized && Settings.canDrawOverlays(this)) {
             val service = Intent(this, OverlayService::class.java)
             service.putExtra("token", token)
             startService(service)
@@ -118,9 +118,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_CODE && Settings.canDrawOverlays(this)) {
-            if (Settings.canDrawOverlays(this@MainActivity)) {
-                login()
-            }
+            login()
         }
     }
 }
