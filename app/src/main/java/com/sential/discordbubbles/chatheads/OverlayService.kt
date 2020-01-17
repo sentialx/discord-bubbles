@@ -22,6 +22,8 @@ class OverlayService : Service() {
         var initialized = false
     }
 
+    var token: String? = null
+
     lateinit var windowManager: WindowManager
     lateinit var chatHeads: ChatHeads
 
@@ -80,6 +82,7 @@ class OverlayService : Service() {
 
     override fun onDestroy() {
         initialized = false
+        client = null
         unregisterReceiver(innerReceiver)
         super.onDestroy()
     }
@@ -89,10 +92,13 @@ class OverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent != null && client == null) {
-            val token = intent.extras?.getString("token")
+        if (intent != null && token == null) {
+            token = intent.extras?.getString("token")
+        }
+
+        if (client == null) {
             if (token != null) {
-                client = Client(token) {
+                client = Client(token!!) {
                     Toast.makeText(
                         this, "Logged in successfully",
                         Toast.LENGTH_SHORT
