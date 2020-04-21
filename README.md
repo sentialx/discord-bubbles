@@ -3,6 +3,8 @@
 [![PayPal](https://img.shields.io/badge/PayPal-Donate-brightgreen?style=flat-square)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VCPPFUAL4R6M6&source=url)
 [![Discord](https://discordapp.com/api/guilds/307605794680209409/widget.png?style=shield)](https://discord.gg/P7Vn4VX)
 
+## Sadly, this project doesn't work anymore. Something has changed on the Discord side that doesn't allow to login.
+
 Messenger-like chat heads for Discord on Android.
 
 # Features
